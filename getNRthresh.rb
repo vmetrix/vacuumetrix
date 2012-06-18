@@ -7,6 +7,7 @@
 ### apt-get install libcurl3 libcurl3-gnutls libcurl4-openssl-dev
 ### gem install curl curb json xmlsimple --no-ri --no-rdoc
 
+require 'rubygems'
 require 'curb'
 require 'json'
 require 'socket'
