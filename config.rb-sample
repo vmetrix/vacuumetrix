@@ -1,0 +1,9 @@
+## enter your organization's stuff and copy to config.rb
+
+$account = '12345'
+
+$apikey = '123123123123123123123'
+
+$graphiteserver = '127.0.0.1'
+
+
