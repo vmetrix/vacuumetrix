@@ -12,9 +12,8 @@ require 'curb'
 require 'json'
 require 'socket'
 require 'xmlsimple'
-require './config.rb'
-require './SendGraphite.rb'
-
+require '/opt/vacuumetrix/conf/config.rb'
+require '/opt/vacuumetrix/lib/SendGraphite.rb'
 
 t=Time.now.utc
 $timenow=t.to_i
@@ -22,9 +21,9 @@ $timenow=t.to_i
 
 def GetThresholdMetrics(application, appname)
   begin
-	threshURL= "https://rpm.newrelic.com/accounts/"+$account+"/applications/"+application+"/threshold_values.xml"
+	threshURL= "https://rpm.newrelic.com/accounts/"+$newrelicaccount+"/applications/"+application+"/threshold_values.xml"
 
-	response = Curl::Easy.perform(threshURL) do |curl| curl.headers["x-api-key"] = $apikey
+	response = Curl::Easy.perform(threshURL) do |curl| curl.headers["x-api-key"] = $newrelicapikey
 	end
 
 	body=response.body_str
@@ -43,8 +42,8 @@ end
 
 
 ##get a list of applications for account X
-applicationsURL = "https://rpm.newrelic.com/accounts/"+$account+"/applications.xml"
-appsresponse = Curl::Easy.perform(applicationsURL) do |curl| curl.headers["x-api-key"] = $apikey
+applicationsURL = "https://rpm.newrelic.com/accounts/"+$newrelicaccount+"/applications.xml"
+appsresponse = Curl::Easy.perform(applicationsURL) do |curl| curl.headers["x-api-key"] = $newrelicapikey
 end
 
 appsbody=appsresponse.body_str
