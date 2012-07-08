@@ -2,7 +2,7 @@ vacuumetrix
 ===========
 
 Sucks up metrics from various external sources and puts the data into internal systems. 
-This is a good thing to do because whilst all the external SAAS services we use are fantastic, it's also sometimes very useful to be able to be able to manipulate the data in one place.  For example, we might want to make a single graph with some internally generated application metrics, with some perfomance metrics from New Relic, with some metrics from an AWS Elastic Load Balancer.  Perhaps.  Anyway, vacuumetrix is a collection of ruby scripts that talks to various APIs and allows the collection of this data in one place.  
+This is a good thing to do because whilst all the external SAAS services we use are fantastic, it's also sometimes very useful to be able to be able to view and manipulate the data in one place.  For example, we might want to make a single graph with some internally generated application metrics, with some perfomance metrics from New Relic, with some metrics from an AWS Elastic Load Balancer.  Perhaps.  Anyway, vacuumetrix is a collection of ruby scripts that talk to various APIs and allows the collection of this data in one place.  
 
 
 ##Currently supported Inputs
@@ -19,7 +19,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 #Installation
 
 ##git clone this repo
-    cd opt
+    cd /opt
     git clone https://github.com/99designs/vacuumetrix.git 	
 
 #Configuration
@@ -29,7 +29,7 @@ The config.rb file contains all the local configuration variables.
     cp config.rb-sample  config.rb
 
 ##New Relic
- update config.rb with your organization's API key and account 
+ update config.rb with your organization's API key and account number
 
 ##Output
  your graphite server
@@ -47,7 +47,7 @@ cron:
 ##NewrelicEnduser.rb
 Get New Relic End User (RUM) stats.  Supply two args, app and metric.  
 
-##NewrelicTresholds.rb
+##NewrelicThresholds.rb
 Get the threshhold values for all your applications.  This includes average RAM, CPU, DB etc.
 
 
