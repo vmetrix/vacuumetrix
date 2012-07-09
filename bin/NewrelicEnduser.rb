@@ -31,14 +31,13 @@ metricURL = "https://api.newrelic.com/api/v1/applications/"+application+"/data.j
 response = Curl::Easy.perform(metricURL) do |curl| curl.headers["x-api-key"] = $newrelicapikey
 end
 
+
 body=response.body_str
 result = JSON.parse(body)
 
-#result is a JSON array [ blah ] strip off the []s
-r3=body[1..-2]
+r3=result[0]
 
-r4=JSON.parse(r3)
-message = "newrelic." + r4["app"] + "." + field + " " + r4[field].to_s + " " + timenow.to_s
+message = "newrelic." + r3["app"] + "." + field + " " + r3[field].to_s + " " + timenow.to_s
 
 #puts message 
 Sendit message
