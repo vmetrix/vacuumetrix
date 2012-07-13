@@ -13,7 +13,7 @@ require 'json'
 require 'socket'
 require 'xmlsimple'
 require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/SendGraphite.rb'
+require '/opt/vacuumetrix/lib/Sendit.rb'
 
 t=Time.now.utc
 $timenow=t.to_i
@@ -30,9 +30,7 @@ def GetThresholdMetrics(application, appname)
 	data = XmlSimple.xml_in(body, { 'KeyAttr' => 'threshold_values' })
 
 	data['threshold_value'].each do |item|
-		message = "newrelic." + appname + "." + item['name'].gsub(" ","_") + " " + item['metric_value'] + " " + $timenow.to_s
-#		puts message
-		Sendit message
+	Sendit "newrelic." + appname + "." + item['name'].gsub(" ","_"), item['metric_value'], $timenow.to_s
 	end
   rescue 
 #	puts application + appname + "borked"

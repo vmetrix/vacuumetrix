@@ -9,7 +9,7 @@ require 'curb'
 require 'json'
 require 'socket'
 require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/SendGraphite.rb'
+require '/opt/vacuumetrix/lib/Sendit.rb'
 
 if ARGV.length != 2
 	puts "I need two arguments. First is the application (e.g. 12345) second is the EndUser field (e.g. average_be_response_time)"
@@ -37,8 +37,8 @@ result = JSON.parse(body)
 
 r3=result[0]
 
-message = "newrelic." + r3["app"] + "." + field + " " + r3[field].to_s + " " + timenow.to_s
+metricpath = "newrelic." + r3["app"] + "." + field 
+metricvalue = r3[field]
+metrictimestamp = timenow.to_s
 
-#puts message 
-Sendit message
-
+Sendit metricpath, metricvalue, metrictimestamp

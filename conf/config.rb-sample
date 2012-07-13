@@ -1,9 +1,19 @@
 ## enter your organization's stuff and copy to config.rb
 
-$newrelicaccount = '12345'
+#$newrelicaccount = '12345'
+$newrelicaccount = ''
+#$newrelicapikey = '123123123123123123123'
+$newrelicapikey = ''
 
-$newrelicapikey = '123123123123123123123'
 
-$graphiteserver = '127.0.0.1'
+#$awsaccesskey = 'AAAAAAAAAAAAAAAA'
+$awsaccesskey = ''
+#$awssecretkey = 'aaaaaaaaaaaaaaaaaaaaaaaaaa'
+$awssecretkey = ''
+
+
+#$graphiteserver = '127.0.0.1'
+$graphiteserver = ''
+
 
 
