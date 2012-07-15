@@ -8,12 +8,12 @@ This is a good thing to do because whilst all the external SAAS services we use 
 ##Currently supported Inputs
 
 * New Relic
-
+* AWS Cloudwatch
 
 ##Currently supported Outputs
 
 * Graphite
-
+* Ganglia
 
 ------------
 #Installation
@@ -31,8 +31,12 @@ The config.rb file contains all the local configuration variables.
 ##New Relic
  update config.rb with your organization's API key and account number
 
+##AWS
+ update config.rb with your organization's AWSAccessKeyId and AWSSecretKey with permission to read the Cloudwatch API
+
 ##Output
- your graphite server
+ your Graphite server
+ your Ganglia-gmond server
 
 (Note:  If you haven't already done so you will need to activate the New Relic REST API.  See here: http://blog.newrelic.com/2011/06/20/new-data-api/
 
@@ -50,19 +54,23 @@ Get New Relic End User (RUM) stats.  Supply two args, app and metric.
 ##NewrelicThresholds.rb
 Get the threshhold values for all your applications.  This includes average RAM, CPU, DB etc.
 
+##AWScloudwatchELB.rb
+Get Elastic Load Balancer metrics.  Supply the name of the ELB.
+
+##AWScloudwatchELB.rb
+Get RDS  metrics.  Supply the name of the Relational Database Service instance. (Tested with MySQL).  YMMV.
 
 #TODO
 
 ##Suck in
 
-* AWS
+* Other AWS metrics
 * Google Analytics
 
 ##Spit out 
 
 * Statsd
-* Ganglia 
-
+* OpenTSDB
 
 ------------
 Pull requests are appreciated.

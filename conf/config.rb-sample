@@ -11,9 +11,9 @@ $awsaccesskey = ''
 #$awssecretkey = 'aaaaaaaaaaaaaaaaaaaaaaaaaa'
 $awssecretkey = ''
 
-
-#$graphiteserver = '127.0.0.1'
-$graphiteserver = ''
+##Graphite Gmond server (may or may not be your graphite web server)
+#$gmondserver = '127.0.0.1'
+$gmondserver = ''
 
 
 
