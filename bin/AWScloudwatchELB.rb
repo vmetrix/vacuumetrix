@@ -63,3 +63,40 @@ metricNames.each do |metricName, statistic|
 
   Sendit metricpath, metricvalue, metrictimestamp
 end
+
+#### also get latency (measured in seconds)
+
+metricNames = { "Maximum"       => "Latency",
+                "Average"       => "Latency",
+        }
+
+unit = 'Seconds'
+
+cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+
+metricNames.each do |statistic, metricName|
+  response = cloudwatch.get_metric_statistics({
+           'Statistics' => statistic,
+           'StartTime' =>  startTime.iso8601,
+           'EndTime'    => endTime.iso8601,
+           'Period'     => 60,
+           'Unit'       => unit,
+           'MetricName' => metricName,
+           'Namespace'  => 'AWS/ELB',
+           'Dimensions' => [{
+                        'Name'  => 'LoadBalancerName',
+                        'Value' => dimensionId
+                        }]
+           }).body['GetMetricStatisticsResult']['Datapoints']
+
+  metricpath = "AWScloudwatch.ELB." + dimensionId + "." + metricName + "_" + statistic
+  begin
+        metricvalue = response.first[statistic]
+  rescue
+        metricvalue = 0
+  end
+  metrictimestamp = endTime.to_i.to_s
+
+  Sendit metricpath, metricvalue, metrictimestamp
+end
+
