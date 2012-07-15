@@ -3,13 +3,13 @@ require '/opt/vacuumetrix/lib/SendGraphite.rb'
 require '/opt/vacuumetrix/lib/SendGanglia.rb'
 
 def Sendit(metricpath, metricvalue, metrictimestamp)
-  unless $graphiteserver.empty?
+  if !$graphiteserver.nil? and !$graphiteserver.empty?
 #	puts metricpath + " " + metricvalue.to_s + " " + metrictimestamp.to_s 
   	SendGraphite metricpath, metricvalue, metrictimestamp 
   end
 
-  unless $gmondserver.empty?
-  	SendGanglia metricpath, metricvalue
+  if !$gmondserver.nil? and !$gmondserver.empty? 
+	SendGanglia metricpath, metricvalue
   end
 
 end
