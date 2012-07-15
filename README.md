@@ -57,7 +57,7 @@ Get the threshhold values for all your applications.  This includes average RAM,
 ##AWScloudwatchELB.rb
 Get Elastic Load Balancer metrics.  Supply the name of the ELB.
 
-##AWScloudwatchELB.rb
+##AWScloudwatchRDS.rb
 Get RDS  metrics.  Supply the name of the Relational Database Service instance. (Tested with MySQL).  YMMV.
 
 #TODO
