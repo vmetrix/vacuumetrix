@@ -22,14 +22,26 @@ dimensionId = ARGV[0]
 startTime = Time.now.utc-180
 endTime  = Time.now.utc-120
 
-unit           = 'Percent'
+
+metricNames = {	"CPUUtilization" 	=> "Percent", 
+		"DatabaseConnections" 	=> "Count",
+		"FreeStorageSpace" 	=> "Bytes",
+		"ReadIOPS"		=> "Count/Second",
+ 		"ReadLatency"		=> "Seconds",
+		"ReadThroughput"	=> "Bytes/Second",
+		"WriteIOPS"		=> "Count/Second",
+ 		"WriteLatency"		=> "Seconds",
+		"WriteThroughput"	=> "Bytes/Second",
+	}
+
 statisticTypes = 'Average'
 
 cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
 
-metricName     = 'CPUUtilization'
 
-response = cloudwatch.get_metric_statistics({
+metricNames.each do |metricName, unit|
+
+  response = cloudwatch.get_metric_statistics({
            'Statistics' => 'Average',
            'StartTime' =>  startTime.iso8601,
            'EndTime'    => endTime.iso8601, 
@@ -43,8 +55,9 @@ response = cloudwatch.get_metric_statistics({
 			}]
            }).body['GetMetricStatisticsResult']['Datapoints']
 
-metricpath = "AWScloudwatch.RDS." + dimensionId + "." + metricName 
-metricvalue = response.first["Average"]
-metrictimestamp = endTime.to_i.to_s
+  metricpath = "AWScloudwatch.RDS." + dimensionId + "." + metricName 
+  metricvalue = response.first["Average"]
+  metrictimestamp = endTime.to_i.to_s
 
-Sendit metricpath, metricvalue, metrictimestamp
+  Sendit metricpath, metricvalue, metrictimestamp
+end
