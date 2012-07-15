@@ -19,11 +19,8 @@ dimensionId = ARGV[0]
 
 #AWS cloudwatch stats seem to be a minute or so behind
 
-startTime = (Time.now.gmtime-180).iso8601
-endTime  = (Time.now.gmtime-120).iso8601
-
-t=Time.now.utc
-timenow=t.to_i
+startTime = Time.now.utc-180
+endTime  = Time.now.utc-120
 
 unit           = 'Percent'
 statisticTypes = 'Average'
@@ -34,8 +31,8 @@ metricName     = 'CPUUtilization'
 
 response = cloudwatch.get_metric_statistics({
            'Statistics' => 'Average',
-           'StartTime' =>  startTime,
-           'EndTime'    => endTime, 
+           'StartTime' =>  startTime.iso8601,
+           'EndTime'    => endTime.iso8601, 
 	   'Period'     => 60, 
            'Unit'       => unit,
 	   'MetricName' => metricName, 
@@ -48,6 +45,6 @@ response = cloudwatch.get_metric_statistics({
 
 metricpath = "AWScloudwatch.RDS." + dimensionId + "." + metricName 
 metricvalue = response.first["Average"]
-metrictimestamp = timenow.to_s
+metrictimestamp = endTime.to_i.to_s
 
 Sendit metricpath, metricvalue, metrictimestamp
