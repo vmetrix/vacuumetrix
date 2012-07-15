@@ -4,7 +4,7 @@ def SendGanglia(metricpath, metricvalue)
   begin
     Ganglia::GMetric.send($gmondserver, 8649, {
     :name => metricpath,
-    :units => 'count',
+    :units => '',
     :type => 'float',     
     :value => metricvalue.to_f,    
     :tmax => 60,          
