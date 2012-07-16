@@ -60,12 +60,16 @@ Get Elastic Load Balancer metrics.  Supply the name of the ELB.
 ##AWScloudwatchRDS.rb
 Get RDS  metrics.  Supply the name of the Relational Database Service instance. (Tested with MySQL).  YMMV.
 
+##AWScountEC2.rb
+Count the number of EC2 instances of each flavor.  No arguments.
+
 #TODO
 
 ##Suck in
 
-* Other AWS metrics
+* Other AWS metrics (EBS)
 * Google Analytics
+* Neustar metrics
 
 ##Spit out 
 
