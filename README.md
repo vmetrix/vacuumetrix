@@ -55,6 +55,9 @@ Get New Relic End User (RUM) stats.  Supply two args, app and metric.
 Get the threshhold values for all your applications.  This includes average RAM, CPU, DB etc.
 
 ##AWScloudwatchELB.rb
+Get EBS metrics.  No arguments.  Run every 5 minutes. No point running more frequently.
+
+##AWScloudwatchELB.rb
 Get Elastic Load Balancer metrics.  Supply the name of the ELB.
 
 ##AWScloudwatchRDS.rb
