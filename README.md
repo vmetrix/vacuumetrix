@@ -8,7 +8,8 @@ This is a good thing to do because whilst all the external SAAS services we use 
 ##Currently supported Inputs
 
 * New Relic
-* AWS Cloudwatch
+* AWS Cloudwatch (some services)
+* Neustar Web Performance Management
 
 ##Currently supported Outputs
 
@@ -33,6 +34,9 @@ The config.rb file contains all the local configuration variables.
 
 ##AWS
  update config.rb with your organization's AWSAccessKeyId and AWSSecretKey with permission to read the Cloudwatch API
+
+##Neustar
+  update config.rb with your organization's API Key and Secret
 
 ##Output
  your Graphite server
@@ -66,13 +70,16 @@ Get RDS  metrics.  Supply the name of the Relational Database Service instance. 
 ##AWScountEC2.rb
 Count the number of EC2 instances of each flavor.  No arguments.
 
+##Neustar.rb
+Get Neustar Web Performance Metrics.  For each monitor get duration and status for each monitored location.  No arguments.  Run every 5 minutes.  (Not very efficient at the moment.  Needs some tuning).
+
+
 #TODO
 
 ##Suck in
 
 * Other AWS metrics (EBS)
 * Google Analytics
-* Neustar metrics
 
 ##Spit out 
 

@@ -1,19 +1,28 @@
-## enter your organization's stuff and copy to config.rb
+## enter your organization's credentials and output server addresses and copy to config.rb
+
+##Inputs
 
 #$newrelicaccount = '12345'
 $newrelicaccount = ''
 #$newrelicapikey = '123123123123123123123'
 $newrelicapikey = ''
 
-
 #$awsaccesskey = 'AAAAAAAAAAAAAAAA'
 $awsaccesskey = ''
 #$awssecretkey = 'aaaaaaaaaaaaaaaaaaaaaaaaaa'
 $awssecretkey = ''
 
-##Graphite Gmond server (may or may not be your graphite web server)
+#$neustarkey = '000.0.AAAAAAAAAA.AAAAAAAAAAA.AAAAAAAAAAAAAAAAAAAAA'
+$neustarkey = ''
+#$neustarsecret = 'AAAAAAAA'
+$neustarsecret = ''
+
+##Outputs
+
+#$graphiteserver = '127.0.0.1'
+$graphiteserver = ''
+
+##Ganglia Gmond server (may or may not be your Ganglia web server)
 #$gmondserver = '127.0.0.1'
 $gmondserver = ''
-
-
 
