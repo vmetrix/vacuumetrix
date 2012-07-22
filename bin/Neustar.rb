@@ -10,6 +10,7 @@ require '/opt/vacuumetrix/conf/config.rb'
 require '/opt/vacuumetrix/lib/Sendit.rb'
 require 'digest/md5'
 require 'curb'
+require 'time'
 
 $startTime = Time.now.utc-3600
 $endTime  = Time.now.utc-1800
