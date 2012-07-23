@@ -10,6 +10,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 * New Relic
 * AWS Cloudwatch (some services)
 * Neustar Web Performance Management
+* facebook "likes"
 
 ##Currently supported Outputs
 
@@ -73,6 +74,8 @@ Count the number of EC2 instances of each flavor.  No arguments.
 ##Neustar.rb
 Get Neustar Web Performance Metrics.  For each monitor get duration and status for each monitored location.  No arguments.  Run every 5 minutes.  (Not very efficient at the moment.  Needs some tuning).
 
+##facebook.rb
+Argument is the name of the page you want to check the like count of. 
 
 #TODO
 
