@@ -25,7 +25,6 @@ end
 body = response.body_str
 result = JSON.parse(body)
 
-p result
 metricpath = "twitter.followers." + user
 metricvalue = result["followers_count"]  
 metrictimestamp = Time.now.utc.to_i.to_s
