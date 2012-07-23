@@ -11,6 +11,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 * AWS Cloudwatch (some services)
 * Neustar Web Performance Management
 * facebook "likes"
+* twitter "followers"
 
 ##Currently supported Outputs
 
@@ -76,6 +77,9 @@ Get Neustar Web Performance Metrics.  For each monitor get duration and status f
 
 ##facebook.rb
 Argument is the name of the page you want to check the like count of. 
+
+##twitter.rb
+Argument is the name of the twitter user you want to check the number of followers of. 
 
 #TODO
 
