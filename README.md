@@ -17,6 +17,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 
 * Graphite
 * Ganglia
+* OpenTSDB
 
 ------------
 #Installation
@@ -85,13 +86,12 @@ Argument is the name of the twitter user you want to check the number of followe
 
 ##Suck in
 
-* Other AWS metrics (EBS)
+* Other AWS metrics 
 * Google Analytics
 
 ##Spit out 
 
 * Statsd
-* OpenTSDB
 
 ------------
 Pull requests are appreciated.

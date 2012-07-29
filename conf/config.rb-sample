@@ -26,3 +26,8 @@ $graphiteserver = ''
 #$gmondserver = '127.0.0.1'
 $gmondserver = ''
 
+##OpenTSDB You'll need to manually tell tsdb about each top level metric you add like this:
+## tsdb mkmetric newrelic
+## tsdb mkmetric AWScloudwatch 
+#$opentsdbserver = '127.0.0.1'
+$opentsdbserver = ''
