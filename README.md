@@ -73,6 +73,9 @@ Get RDS  metrics.  Supply the name of the Relational Database Service instance. 
 ##AWScountEC2.rb
 Count the number of EC2 instances of each flavor.  No arguments.
 
+##AWScloudwatchElasticache.rb
+Get Elasticache metrics.  Interesting ones anyway.  No arguments.
+
 ##Neustar.rb
 Get Neustar Web Performance Metrics.  For each monitor get duration and status for each monitored location.  No arguments.  Run every 5 minutes.  (Not very efficient at the moment.  Needs some tuning).
 
