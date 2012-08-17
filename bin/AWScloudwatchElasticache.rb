@@ -38,7 +38,7 @@ metrics_list.each do |met|
            'Dimensions' => met['Dimensions']
 	           }).body['GetMetricStatisticsResult']['Datapoints']
 
-    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + cacheNodeId + "." + metricName
+    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + metricName + "." + cacheNodeId 
     begin
         metricvalue = response.first[statistic]
     rescue
@@ -73,7 +73,7 @@ metrics_list.each do |met|
            'Dimensions' => met['Dimensions']
 	           }).body['GetMetricStatisticsResult']['Datapoints']
 
-    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + cacheNodeId + "." + metricName
+    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + metricName + "." + cacheNodeId
     begin
         metricvalue = response.first[statistic]
     rescue
@@ -108,7 +108,7 @@ metrics_list.each do |met|
            'Dimensions' => met['Dimensions']
 	           }).body['GetMetricStatisticsResult']['Datapoints']
 
-    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + cacheNodeId + "." + metricName
+    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + metricName + "." + cacheNodeId
     begin
         metricvalue = response.first[statistic]
     rescue
