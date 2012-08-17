@@ -47,7 +47,6 @@ metrics_list.each do |met|
     metrictimestamp = endTime.to_i.to_s
 
     Sendit metricpath, metricvalue, metrictimestamp
-    puts metricpath, metricvalue, metrictimestamp
   end
 end
 
@@ -82,7 +81,6 @@ metrics_list.each do |met|
     metrictimestamp = endTime.to_i.to_s
 
     Sendit metricpath, metricvalue, metrictimestamp
-    puts metricpath, metricvalue, metrictimestamp
   end
 end
 
@@ -117,7 +115,6 @@ metrics_list.each do |met|
     metrictimestamp = endTime.to_i.to_s
 
     Sendit metricpath, metricvalue, metrictimestamp
-    puts metricpath, metricvalue, metrictimestamp
   end
 end
 
