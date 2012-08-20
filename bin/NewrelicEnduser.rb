@@ -3,13 +3,15 @@
 ### David Lutz
 ### 2012-06-08
 
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
+require 'config'
+require 'Sendit'
 ## new versions of ruby don't need the following line
 require 'rubygems'
 require 'curb'
 require 'json'
-require 'socket'
-require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/Sendit.rb'
 
 if ARGV.length != 2
 	puts "I need two arguments. First is the application (e.g. 12345) second is the EndUser field (e.g. average_be_response_time)"
@@ -31,13 +33,13 @@ metricURL = "https://api.newrelic.com/api/v1/applications/"+application+"/data.j
 response = Curl::Easy.perform(metricURL) do |curl| curl.headers["x-api-key"] = $newrelicapikey
 end
 
-
 body=response.body_str
 result = JSON.parse(body)
 
 r3=result[0]
 
-metricpath = "newrelic." + r3["app"] + "." + field 
+appname = r3["app"].gsub( /[ \.]/, "_")
+metricpath = "newrelic." + appname + "." + field 
 metricvalue = r3[field]
 metrictimestamp = timenow.to_s
 

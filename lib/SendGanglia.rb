@@ -2,7 +2,7 @@ require 'gmetric'
 
 def SendGanglia(metricpath, metricvalue)
   begin
-    Ganglia::GMetric.send($gmondserver, 8649, {
+    Ganglia::GMetric.send($gmondserver, $gmondport, {
     :name => metricpath,
     :units => '',
     :type => 'float',     

@@ -6,18 +6,19 @@
 ### apt-get install build-essential
 ### apt-get install libcurl3 libcurl3-gnutls libcurl4-openssl-dev
 ### gem install curl curb json xmlsimple --no-ri --no-rdoc
+#
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
+require 'config'
 require 'rubygems'
 require 'curb'
 require 'json'
-require 'socket'
 require 'xmlsimple'
-require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/Sendit.rb'
+require 'Sendit'
 
 t=Time.now.utc
 $timenow=t.to_i
-
 
 def GetThresholdMetrics(application, appname)
   begin
@@ -30,14 +31,12 @@ def GetThresholdMetrics(application, appname)
 	data = XmlSimple.xml_in(body, { 'KeyAttr' => 'threshold_values' })
 
 	data['threshold_value'].each do |item|
-	Sendit "newrelic." + appname + "." + item['name'].gsub(" ","_"), item['metric_value'], $timenow.to_s
+	Sendit "newrelic." + appname.gsub( /[ \.]/, "_") + "." + item['name'].gsub(" ","_"), item['metric_value'], $timenow.to_s
 	end
   rescue 
-#	puts application + appname + "borked"
+	puts application + appname + "borked"
   end
 end
-
-
 
 ##get a list of applications for account X
 applicationsURL = "https://rpm.newrelic.com/accounts/"+$newrelicaccount+"/applications.xml"
@@ -45,13 +44,13 @@ appsresponse = Curl::Easy.perform(applicationsURL) do |curl| curl.headers["x-api
 end
 
 appsbody=appsresponse.body_str
-#puts appsbody
-
 appdata = XmlSimple.xml_in(appsbody, { 'KeyAttr' => 'applications' })
 
 ## big ole loop over the returned XML 
-
 appdata['application'].each do |item|
+	# carbon doesn't like metrics with spaces in them
+	# Also a period is a delimiter which might make the directory
+	# path for carbon deeper than you'd like
 	appname = item['name'][0].to_s
 	application=item['id'].to_s.gsub!(/\D/,"").to_i.to_s
 

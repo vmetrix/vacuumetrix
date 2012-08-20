@@ -4,11 +4,14 @@
 ### 2012-07-10
 ### gem install fog  --no-ri --no-rdoc
  
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
+require 'config'
+require 'Sendit'
 require 'rubygems'
 require 'fog'
 require 'json'
-require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/Sendit.rb'
 
 if ARGV.length != 1
         puts "I need one argument. The RDS instance name"

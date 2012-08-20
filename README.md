@@ -23,23 +23,45 @@ This is a good thing to do because whilst all the external SAAS services we use 
 #Installation
 
 ##git clone this repo
-    cd /opt
     git clone https://github.com/99designs/vacuumetrix.git 	
+
+## Install dependancies
+### Debian/Ubuntu
+
+    apt-get install ruby build-essential libcurl3 libcurl3-gnutls libcurl4-openssl-dev
+
+### Ruby Gems
+
+    gem install json socket
+
+If you're outputting to ganglia gmond you'll also need to
+    
+    gem install gmetric
 
 #Configuration
 The config.rb file contains all the local configuration variables.
 
     cd conf 
-    cp config.rb-sample  config.rb
+    cp config.rb-sample config.rb
 
 ##New Relic
  update config.rb with your organization's API key and account number
 
+    gem install curb xml-simple
+
 ##AWS
  update config.rb with your organization's AWSAccessKeyId and AWSSecretKey with permission to read the Cloudwatch API
 
+    gem install fog
+
 ##Neustar
   update config.rb with your organization's API Key and Secret
+
+    gem install curb time
+
+##Twitter
+
+    gem install curb
 
 ##Output
  your Graphite server

@@ -4,10 +4,13 @@
 ### 2012-07-22
 # Neustar API example code https://apidocs.wpm.neustar.biz/
 
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
+require 'config'
+require 'Sendit'
 require 'rubygems'
 require 'json'
-require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/Sendit.rb'
 require 'digest/md5'
 require 'curb'
 require 'time'
