@@ -3,12 +3,15 @@
 ### David Lutz
 ### 2012-07-23
 
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
+require 'config'
+require 'Sendit'
 ## new versions of ruby don't need the following line
 require 'rubygems'
 require 'curb'
 require 'json'
-require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/Sendit.rb'
 
 if ARGV.length != 1
   puts "I need one arguments. The name of the page."

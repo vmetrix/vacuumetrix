@@ -1,17 +1,21 @@
-## enter your organization's credentials and output server addresses and copy to config.rb
-
 ##Inputs
-
-#$newrelicaccount = '12345'
+# New Relic
+# enter your organization's credentials and output server addresses and copy to config.rb
+# $newrelicaccount = '12345'
 $newrelicaccount = ''
-#$newrelicapikey = '123123123123123123123'
+# Your API key can be obtained from
+# https://rpm.newrelic.com/accounts/$newrelicaccount/integrations?page=data_sharing
+#
+# $newrelicapikey = '123123123123123123123'
 $newrelicapikey = ''
 
+# AWS
 #$awsaccesskey = 'AAAAAAAAAAAAAAAA'
 $awsaccesskey = ''
 #$awssecretkey = 'aaaaaaaaaaaaaaaaaaaaaaaaaa'
 $awssecretkey = ''
 
+# Neustar
 #$neustarkey = '000.0.AAAAAAAAAA.AAAAAAAAAAA.AAAAAAAAAAAAAAAAAAAAA'
 $neustarkey = ''
 #$neustarsecret = 'AAAAAAAA'
@@ -19,15 +23,19 @@ $neustarsecret = ''
 
 ##Outputs
 
+# Graphite
 #$graphiteserver = '127.0.0.1'
 $graphiteserver = ''
+$graphiteport = 2003
 
 ##Ganglia Gmond server (may or may not be your Ganglia web server)
 #$gmondserver = '127.0.0.1'
 $gmondserver = ''
+$gmondport = 8649
 
 ##OpenTSDB You'll need to manually tell tsdb about each top level metric you add like this:
 ## tsdb mkmetric newrelic
 ## tsdb mkmetric AWScloudwatch 
 #$opentsdbserver = '127.0.0.1'
 $opentsdbserver = ''
+$opentsdbport = 4242
