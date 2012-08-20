@@ -48,9 +48,6 @@ appdata = XmlSimple.xml_in(appsbody, { 'KeyAttr' => 'applications' })
 
 ## big ole loop over the returned XML 
 appdata['application'].each do |item|
-	# carbon doesn't like metrics with spaces in them
-	# Also a period is a delimiter which might make the directory
-	# path for carbon deeper than you'd like
 	appname = item['name'][0].to_s
 	application=item['id'].to_s.gsub!(/\D/,"").to_i.to_s
 
