@@ -3,11 +3,13 @@
 ### David Lutz
 ### 2012-07-19
 ### gem install fog  --no-ri --no-rdoc
- 
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
+require 'config'
+require 'Sendit'
 require 'rubygems'
 require 'fog'
-require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/Sendit.rb'
 
 #AWS cloudwatch stats for EBS seem to be at least 15 minutes behind and have a granualarity of 5 minutes
 

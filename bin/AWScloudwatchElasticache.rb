@@ -3,10 +3,13 @@
 ### David Lutz
 ### 2012-08-01
  
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
+require 'config'
+require 'Sendit'
 require 'rubygems'
 require 'fog'
-require '/opt/vacuumetrix/conf/config.rb'
-require '/opt/vacuumetrix/lib/Sendit.rb'
 
 startTime = Time.now.utc-180
 endTime  = Time.now.utc-120
