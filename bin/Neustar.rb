@@ -34,19 +34,17 @@ def lookupNeustarSamples(id, name)
   items =  data["items"]
 
   items.each do |i|
-    startTime = i["startTime"] + " UTC"
-    metricpath = "neustar." + name.gsub(" ","_") + "." + i["location"] + "." + "duration"
-    metricvalue = i["duration"]
-    metrictimestamp = Time.parse(startTime).to_i.to_s
-
-    Sendit metricpath, metricvalue, metrictimestamp
-
-###todo make nicer
-      if !i["status"] == "SUCCESS"
-        metricpath = "neustar." + name.gsub(" ","_") + "." + i["location"] +"." +  "error"
-  	Sendit metricpath, "1" , metrictimestamp
-      end
-### end todo
+    if i["status"] == "SUCCESS"
+      startTime = i["startTime"] + " UTC"
+      metricpath = "neustar." + name.gsub(" ","_") + "." + i["location"] + "." + "duration"
+      metricvalue = i["duration"]
+      metrictimestamp = Time.parse(startTime).to_i.to_s
+      Sendit metricpath, metricvalue, metrictimestamp
+    end
+    if i["status"] == "ERROR"
+      metricpath = "neustar." + name.gsub(" ","_") + "." + i["location"] +"." +  "error"
+      Sendit metricpath, "1" , metrictimestamp
+    end
 
   end 
 
