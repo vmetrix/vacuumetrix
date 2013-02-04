@@ -32,7 +32,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 
 ### Ruby Gems
 
-    gem install json socket
+    gem install json 
 
 If you're outputting to ganglia gmond you'll also need to
     
@@ -63,14 +63,10 @@ The config.rb file contains all the local configuration variables.
 
     gem install curb
 
-##Output
- your Graphite server
- your Ganglia-gmond server
-
-(Note:  If you haven't already done so you will need to activate the New Relic REST API.  See here: http://blog.newrelic.com/2011/06/20/new-data-api/
 
 #Running the scripts
 The scripts are in the bin directory and are designed to be run from cron every minute.
+Generally if no argument is supplied to the script it'll grab all the metrics.  If an argument is supplied it'll be more specific.
 
 cron:
 <pre>
@@ -78,6 +74,7 @@ cron:
 </pre>
 
 ##NewrelicEnduser.rb
+(Note:  If you haven't already done so you will need to activate the New Relic REST API.  See here: http://blog.newrelic.com/2011/06/20/new-data-api/
 Get New Relic End User (RUM) stats.  Supply two args, app and metric.  
 
 ##NewrelicThresholds.rb
@@ -90,7 +87,7 @@ Get EBS metrics.  No arguments.  Run every 5 minutes. No point running more freq
 Get Elastic Load Balancer metrics.  Supply the name of the ELB.
 
 ##AWScloudwatchRDS.rb
-Get RDS  metrics.  Supply the name of the Relational Database Service instance. (Tested with MySQL).  YMMV.
+Get RDS metrics.  Optionally supply the name of the Relational Database Service instance. (Tested with MySQL).  YMMV.
 
 ##AWScountEC2.rb
 Count the number of EC2 instances of each flavor.  No arguments.
