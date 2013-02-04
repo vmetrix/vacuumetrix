@@ -3,9 +3,14 @@
 ### David Lutz
 ### 2012-07-10
 ### gem install fog  --no-ri --no-rdoc
+### if no argument is specified get metrics for all databases
+### if a database name is specified as an argument then only show that database
  
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
+#require '/opt/vacuumetrix/conf/config.rb'
+#require '/opt/vacuumetrix/lib/Sendit.rb'
 
 require 'config'
 require 'Sendit'
@@ -13,12 +18,10 @@ require 'rubygems'
 require 'fog'
 require 'json'
 
-if ARGV.length != 1
-        puts "I need one argument. The RDS instance name"
-        exit 1
+if ARGV.length == 1
+  dimensionId = ARGV[0]
 end
 
-dimensionId = ARGV[0]
 
 #AWS cloudwatch stats seem to be a minute or so behind
 
@@ -39,8 +42,11 @@ metricNames = {	"CPUUtilization" 	=> "Percent",
 
 statisticTypes = 'Average'
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+rds = Fog::AWS::RDS.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
 
+if !dimensionId.nil?
+  instance_list = rds.servers.get(dimensionId)
+  cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
 
 metricNames.each do |metricName, unit|
 
@@ -63,4 +69,35 @@ metricNames.each do |metricName, unit|
   metrictimestamp = endTime.to_i.to_s
 
   Sendit metricpath, metricvalue, metrictimestamp
+end
+else
+  instance_list = rds.servers.all
+
+  instance_list.each do |i|
+  cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+
+  dimensionId = i.id
+  metricNames.each do |metricName, unit|
+
+    response = cloudwatch.get_metric_statistics({
+           'Statistics' => 'Average',
+           'StartTime' =>  startTime.iso8601,
+           'EndTime'    => endTime.iso8601, 
+	   'Period'     => 60, 
+           'Unit'       => unit,
+	   'MetricName' => metricName, 
+	   'Namespace'  => 'AWS/RDS',
+	   'Dimensions' => [{
+	                'Name'  => 'DBInstanceIdentifier', 
+	                'Value' => dimensionId 
+			}]
+           }).body['GetMetricStatisticsResult']['Datapoints']
+
+    metricpath = "AWScloudwatch.RDS." + dimensionId + "." + metricName 
+    metricvalue = response.first["Average"]
+    metrictimestamp = endTime.to_i.to_s
+
+    Sendit metricpath, metricvalue, metrictimestamp
+  end
+end
 end
