@@ -39,7 +39,7 @@ metricNames = {	"RequestCount"		=> "Sum",
 
 unit = 'Count'
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 
 metricNames.each do |metricName, statistic|
   response = cloudwatch.get_metric_statistics({
