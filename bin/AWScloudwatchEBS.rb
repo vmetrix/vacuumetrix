@@ -16,7 +16,7 @@ require 'fog'
 startTime = Time.now.utc-3600
 endTime  = Time.now.utc-3300
 
-compute = Fog::Compute.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+compute = Fog::Compute.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 instance_list = compute.volumes.all
 
 # ['VolumeWriteBytes', 'VolumeWriteOps', 'VolumeReadBytes', 'VolumeIdleTime', 'VolumeTotalReadTime', 'VolumeQueueLength', 'VolumeTotalWriteTime', 'VolumeReadOps']

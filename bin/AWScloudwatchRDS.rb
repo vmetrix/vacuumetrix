@@ -38,7 +38,7 @@ metricNames = {	"CPUUtilization" 	=> "Percent",
 
 statisticTypes = 'Average'
 
-rds = Fog::AWS::RDS.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+rds = Fog::AWS::RDS.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 
 if !dimensionId.nil?
   instance_list = rds.servers.get(dimensionId)
