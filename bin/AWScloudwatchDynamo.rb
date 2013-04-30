@@ -18,8 +18,8 @@ tables = ARGV[0].split(' ')
 
 # 15 minutes back, 5 min period
 
-startTime = Time.now.utc-3600
-endTime  = Time.now.utc-3300
+startTime = Time.now.utc-1200
+endTime = Time.now.utc-900
 
 operations = %w(PutItem DeleteItem UpdateItem GetItem BatchGetItem Scan Query)
 operationLevelMetrics = [
@@ -37,6 +37,16 @@ operationLevelMetrics = [
         :name => "SystemErrors",
         :unit => "Count",
         :stats => ["Sum"],
+    },
+    {
+        :name => "UserErrors",
+        :unit => "Count",
+        :stats => ["Sum"],
+    },
+    {
+        :name => "ReturnedItemCount",
+        :unit => "Count",
+        :stats => ["Minimum", "Maximum", "Average", "Sum"],
     }
 ]
 
@@ -45,38 +55,39 @@ cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :
 
 tables.each do |table|
   operationLevelMetrics.each do |metric|
-    metric[:stats].each do |stat|
-      operations.each do |operation|
-        response = cloudwatch.get_metric_statistics({
-                                                      'Statistics' => stat,
-                                                      'StartTime' => startTime.iso8601,
-                                                      'EndTime' => endTime.iso8601,
-                                                      'Period' => 300,
-                                                      'Unit' => metric[:unit],
-                                                      'MetricName' => metric[:name],
-                                                      'Namespace' => 'AWS/DynamoDB',
-                                                      'Dimensions' => [
-                                                          {
-                                                              'Name' => 'TableName',
-                                                              'Value' => table
-                                                          },
-                                                          {
-                                                              'Name' => "Operation",
-                                                              'Value' => operation
-                                                          }
-                                                      ]
-                                                  }).body['GetMetricStatisticsResult']['Datapoints']
+    operations.each do |operation|
+      responseArr = cloudwatch.get_metric_statistics({
+                                                         'Statistics' => metric[:stats],
+                                                         'StartTime' => startTime.iso8601,
+                                                         'EndTime' => endTime.iso8601,
+                                                         'Period' => 300,
+                                                         'Unit' => metric[:unit],
+                                                         'MetricName' => metric[:name],
+                                                         'Namespace' => 'AWS/DynamoDB',
+                                                         'Dimensions' => [
+                                                             {
+                                                                 'Name' => 'TableName',
+                                                                 'Value' => table
+                                                             },
+                                                             {
+                                                                 'Name' => "Operation",
+                                                                 'Value' => operation
+                                                             }
+                                                         ]
+                                                     }).body['GetMetricStatisticsResult']['Datapoints']
 
-        metricpath = "AWScloudwatch.Dynamo." + table + "." + metric[:name] + "." + operation + "." + stat
-        begin
-          metricvalue = response.first[stat]
-        rescue
-          metricvalue = 0
+      metric[:stats].each do |stat|
+        responseArr.each do |response|
+          metricpath = "AWScloudwatch.Dynamo." + table + "." + metric[:name] + "." + operation + "." + stat
+          begin
+            metricvalue = response[stat]
+            metrictimestamp = response["Timestamp"].to_i.to_s
+
+            Sendit metricpath, metricvalue, metrictimestamp
+          rescue
+            # ignored
+          end
         end
-        metrictimestamp = endTime.to_i.to_s
-
-        Sendit metricpath, metricvalue, metrictimestamp
-        puts metricpath, metricvalue, metrictimestamp
       end
     end
   end
@@ -107,42 +118,37 @@ tableLevelMetrics = [
         :name => "ConsumedWriteCapacityUnits",
         :unit => "Count",
         :stats => ["Minimum", "Maximum", "Average", "Sum"],
-    },
-    {
-        :name => "ReturnedItemCount",
-        :unit => "Count",
-        :stats => ["Minimum", "Maximum", "Average", "Sum"],
     }
 ]
 
 tables.each do |table|
   tableLevelMetrics.each do |metric|
+    responseArr = cloudwatch.get_metric_statistics({
+                                                       'Statistics' => metric[:stats],
+                                                       'StartTime' => startTime.iso8601,
+                                                       'EndTime' => endTime.iso8601,
+                                                       'Period' => 300,
+                                                       'Unit' => metric[:unit],
+                                                       'MetricName' => metric[:name],
+                                                       'Namespace' => 'AWS/DynamoDB',
+                                                       'Dimensions' => [{
+                                                                            'Name' => 'TableName',
+                                                                            'Value' => table
+                                                                        }]
+                                                   }).body['GetMetricStatisticsResult']['Datapoints']
+
     metric[:stats].each do |stat|
-      response = cloudwatch.get_metric_statistics({
-                                                      'Statistics' => stat,
-                                                      'StartTime' =>  startTime.iso8601,
-                                                      'EndTime'    => endTime.iso8601,
-                                                      'Period'     => 300,
-                                                      'Unit'       => metric[:unit],
-                                                      'MetricName' => metric[:name],
-                                                      'Namespace'  => 'AWS/DynamoDB',
-                                                      'Dimensions' => [{
-                                                                           'Name'  => 'TableName',
-                                                                           'Value' => table
-                                                                       }]
-                                                  }).body['GetMetricStatisticsResult']['Datapoints']
+      responseArr.each do |response|
+        metricpath = "AWScloudwatch.Dynamo." + table + "." + metric[:name] + "." + stat
+        begin
+          metricvalue = response[stat]
+          metrictimestamp = response["Timestamp"].to_i.to_s
 
-      metricpath = "AWScloudwatch.Dynamo." + table + "." + metric[:name] + "." + stat
-      begin
-        metricvalue = response.first[stat]
-      rescue
-        metricvalue = 0
+          Sendit metricpath, metricvalue, metrictimestamp
+        rescue
+          # Ignored
+        end
       end
-      metrictimestamp = endTime.to_i.to_s
-
-      Sendit metricpath, metricvalue, metrictimestamp
-      puts metricpath, metricvalue, metrictimestamp
     end
-
   end
 end
