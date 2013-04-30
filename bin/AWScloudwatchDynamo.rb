@@ -16,10 +16,10 @@ end
 
 tables = ARGV[0].split(' ')
 
-# 15 minutes back, 5 min period
+# 10 minutes back, 10 minute period
 
 startTime = Time.now.utc-1200
-endTime = Time.now.utc-900
+endTime  = Time.now.utc-600
 
 operations = %w(PutItem DeleteItem UpdateItem GetItem BatchGetItem Scan Query)
 operationLevelMetrics = [
