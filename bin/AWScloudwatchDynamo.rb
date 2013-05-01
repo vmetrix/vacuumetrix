@@ -8,18 +8,48 @@ require 'Sendit'
 require 'rubygems'
 require 'fog'
 require 'json'
+require 'optparse'
 
-if ARGV.length != 1
-  puts "I need one argument. The space separated Dynamo table names"
+options = {
+    :start_offset => 1200,
+    :end_offset => 600
+}
+
+optparse = OptionParser.new do|opts|
+  opts.banner = "Usage: AWScloudwatchDynamo.rb [options] table_names"
+
+  opts.on( '-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 1200') do |s|
+    options[:start_offset] = s
+  end
+
+  opts.on( '-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 600') do |e|
+    options[:end_offset] = e
+  end
+
+  # This displays the help screen, all programs are
+  # assumed to have this option.
+  opts.on( '-h', '--help', '' ) do
+    puts opts
+    exit
+  end
+
+
+end
+
+optparse.parse!
+
+if ARGV.length == 0
+  puts "Must specifiy at least one table name to pull metrics for"
   exit 1
 end
 
-tables = ARGV[0].split(' ')
+tables = []
+ARGV.each do |table|
+  tables << table
+end
 
-# 10 minutes back, 10 minute period
-
-startTime = Time.now.utc-1200
-endTime  = Time.now.utc-600
+startTime = Time.now.utc - options[:start_offset]
+endTime  = Time.now.utc - options[:end_offset]
 
 operations = %w(PutItem DeleteItem UpdateItem GetItem BatchGetItem Scan Query)
 operationLevelMetrics = [
