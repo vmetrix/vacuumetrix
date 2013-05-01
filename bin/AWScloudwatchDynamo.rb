@@ -48,8 +48,8 @@ ARGV.each do |table|
   tables << table
 end
 
-startTime = Time.now.utc - options[:start_offset]
-endTime  = Time.now.utc - options[:end_offset]
+startTime = Time.now.utc - options[:start_offset].to_i
+endTime  = Time.now.utc - options[:end_offset].to_i
 
 operations = %w(PutItem DeleteItem UpdateItem GetItem BatchGetItem Scan Query)
 operationLevelMetrics = [
