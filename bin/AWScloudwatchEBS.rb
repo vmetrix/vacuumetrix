@@ -45,10 +45,11 @@ cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :
   metricpath = "AWScloudwatch.EBS." + i.id + "." + metricName
   begin
         metricvalue = response.first[statistic]
+        metrictimestamp = response.first["Timestamp"].to_i.to_s
   rescue
         metricvalue = 0
+        metrictimestamp = endTime.to_i.to_s
   end
-  metrictimestamp = endTime.to_i.to_s
 
   Sendit metricpath, metricvalue, metrictimestamp
 end
@@ -81,10 +82,11 @@ cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :
   metricpath = "AWScloudwatch.EBS." + i.id + "." + metricName
   begin
         metricvalue = response.first[statistic]
+        metrictimestamp = response.first["Timestamp"].to_i.to_s
   rescue
         metricvalue = 0
+        metrictimestamp = endTime.to_i.to_s
   end
-  metrictimestamp = endTime.to_i.to_s
 
   Sendit metricpath, metricvalue, metrictimestamp
 end
@@ -115,10 +117,11 @@ cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :
   metricpath = "AWScloudwatch.EBS." + i.id + "." + metricName
   begin
         metricvalue = response.first[statistic]
+        metrictimestamp = response.first["Timestamp"].to_i.to_s
   rescue
         metricvalue = 0
+        metrictimestamp = endTime.to_i.to_s
   end
-  metrictimestamp = endTime.to_i.to_s
 
   Sendit metricpath, metricvalue, metrictimestamp
 end
