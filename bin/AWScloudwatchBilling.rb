@@ -16,7 +16,7 @@ options = {
 }
 
 optparse = OptionParser.new do|opts|
-  opts.banner = "Usage: AWScloudwatchDynamo.rb [options] table_names"
+  opts.banner = "Usage: AWScloudwatchBilling.rb [options]"
 
   opts.on( '-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 21660') do |s|
     options[:start_offset] = s
