@@ -14,7 +14,7 @@ require 'fog'
 startTime = Time.now.utc-180
 endTime  = Time.now.utc-120
 
-cw = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cw = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 metrics_list = cw.list_metrics({
 				'Namespace' => 'AWS/ElastiCache',
 				'MetricName' => 'NetworkBytesIn'

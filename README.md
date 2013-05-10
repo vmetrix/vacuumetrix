@@ -84,7 +84,7 @@ Get the threshhold values for all your applications.  This includes average RAM,
 Get EBS metrics.  No arguments.  Run every 5 minutes. No point running more frequently.
 
 ##AWScloudwatchELB.rb
-Get Elastic Load Balancer metrics.  Supply the name of the ELB.
+Get Elastic Load Balancer metrics.  Supply the name of the ELB or multiple ELBs and and optionally --start-offset and --end-offset (in seconds).
 
 ##AWScloudwatchRDS.rb
 Get RDS metrics.  Optionally supply the name of the Relational Database Service instance. (Tested with MySQL).  YMMV.
@@ -94,6 +94,9 @@ Count the number of EC2 instances of each flavor.  No arguments.
 
 ##AWScloudwatchElasticache.rb
 Get Elasticache metrics.  Interesting ones anyway.  No arguments.
+
+##AWScloudwatchDynamo.rb
+Get DynamoDB metrics. Specify table_name as argument and optionally --start-offset and --end-offset (in seconds). 
 
 ##Neustar.rb
 Get Neustar Web Performance Metrics.  For each monitor get duration and status for each monitored location.  No arguments.  Run every 5 minutes.  (Not very efficient at the moment.  Needs some tuning).
@@ -116,5 +119,6 @@ Argument is the name of the twitter user you want to check the number of followe
 * Statsd
 
 ------------
+Follow vacuumetrix on twitter for updates https://twitter.com/vacuumetrix
 Pull requests are appreciated.
 
