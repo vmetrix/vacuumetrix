@@ -65,6 +65,9 @@ metricNames = {"CPUUtilization" => "Percent",
                "WriteLatency" => "Seconds",
                "WriteThroughput" => "Bytes/Second",
                "ReplicaLag" => "Seconds",
+               "SwapUsage" => "Bytes",
+               "BinLogDiskUsage" => "Bytes",
+               "DiskQueueDepth" => "Count",
 }
 
 
