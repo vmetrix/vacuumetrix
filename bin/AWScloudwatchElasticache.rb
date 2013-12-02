@@ -22,6 +22,7 @@ metrics_list = cw.list_metrics({
 
 
 metrics_list.each do |met|
+  next if met['Dimensions'].length==0
 
   cacheClusterId =  met['Dimensions'].first['Value']
   cacheNodeId = met['Dimensions'].last['Value']
@@ -56,6 +57,7 @@ end
 
 
 metrics_list.each do |met|
+  next if met['Dimensions'].length==0
 
   cacheClusterId =  met['Dimensions'].first['Value']
   cacheNodeId = met['Dimensions'].last['Value']
@@ -90,6 +92,7 @@ end
 
 
 metrics_list.each do |met|
+  next if met['Dimensions'].length==0
 
   cacheClusterId =  met['Dimensions'].first['Value']
   cacheNodeId = met['Dimensions'].last['Value']
