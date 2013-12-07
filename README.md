@@ -61,7 +61,7 @@ The config.rb file contains all the local configuration variables.
 
 ##Twitter
 
-    gem install curb
+    gem install twitter
 
 
 #Running the scripts
@@ -105,7 +105,7 @@ Get Neustar Web Performance Metrics.  For each monitor get duration and status f
 Argument is the name of the page you want to check the like count of. 
 
 ##twitter.rb
-Argument is the name of the twitter user you want to check the number of followers of. 
+Argument is the name of the twitter user you want to check the number of followers of.  You will need to create an application to generate the required OAuth keys here: https://dev.twitter.com/apps.
 
 #TODO
 
