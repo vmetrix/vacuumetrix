@@ -83,6 +83,9 @@ Get New Relic End User (RUM) stats.  Supply two args, app and metric.
 ##NewrelicThresholds.rb
 Get the threshhold values for all your applications.  This includes average RAM, CPU, DB etc.
 
+##AWScloudwatchEC2.rb
+Get EC2 instance metrics.  This includes average CPUUtilization, DiskReadBytes, DiskReadOps, DiskWriteBytes, DiskWriteOps, NetworkIn, and NetworkOut.
+
 ##AWScloudwatchEBS.rb
 Get EBS metrics.  No arguments.  Run every 5 minutes. No point running more frequently.
 
@@ -93,7 +96,7 @@ Get Elastic Load Balancer metrics.  Supply the name of the ELB or multiple ELBs 
 Get RDS metrics.  Optionally supply the name of the Relational Database Service instance. (Tested with MySQL).  YMMV.
 
 ##AWScountEC2.rb
-Count the number of EC2 instances of each flavor.  No arguments.
+Count the number of EC2 instances of each flavor.  Also, capture instance tags if specified in config.  No arguments.
 
 ##AWScloudwatchElasticache.rb
 Get Elasticache metrics.  Interesting ones anyway.  No arguments.
