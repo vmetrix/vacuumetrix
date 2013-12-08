@@ -73,6 +73,9 @@ cron:
 *	*	*	*	*	/opt/vacuumetrix/bin/NewrelicEnduser.rb 123 metricyouwant
 </pre>
 
+Note-
+The AWS CloudWatch scripts depending on the size of your infrastructure and options specified may take far longer than one minute to run.  If you have several hundred instances, this is likely the case.  Adjust the offset times and schedule less frequently.  To adjust the offsets and scheduling time, just test the scripts with 'nc' or similar utilities to measure runtime.  You are still able to maintain minute granularity but fetched less often on slightly longer intervals.  Also just for clarity, GET requests currently cost $0.01USD per 1,000.  If you have 500 instances and you are fetching 5k metrics every 5m, that is ~$430/month.
+
 ##NewrelicEnduser.rb
 (Note:  If you haven't already done so you will need to activate the New Relic REST API.  See here: http://blog.newrelic.com/2011/06/20/new-data-api/
 Get New Relic End User (RUM) stats.  Supply two args, app and metric.  
@@ -104,8 +107,19 @@ Get Neustar Web Performance Metrics.  For each monitor get duration and status f
 ##facebook.rb
 Argument is the name of the page you want to check the like count of. 
 
-##twitter.rb
+##twitter_followers.rb
 Argument is the name of the twitter user you want to check the number of followers of.  You will need to create an application to generate the required OAuth keys here: https://dev.twitter.com/apps.
+
+#Known Issues
+
+##AWS CloudWatch / Fog bug
+There is a bug discussed here: https://github.com/fog/fog/issues/2284 that causes the following error when specifying some CloudWatch metrics:
+
+[excon][WARNING] Invalid Excon request keys: :host
+
+This is fixed on master of Fog but has not been released yet; fix is here: https://github.com/fog/fog/commit/de07ac9016d00d385446820f6a945c7da5dc55b3
+
+If you wish to manually patch it, it is a one-line removal.
 
 #TODO
 
@@ -117,6 +131,11 @@ Argument is the name of the twitter user you want to check the number of followe
 ##Spit out 
 
 * Statsd
+
+##Utility
+
+* Retry class
+* YML config.
 
 ------------
 Follow vacuumetrix on twitter for updates https://twitter.com/vacuumetrix
