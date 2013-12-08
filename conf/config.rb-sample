@@ -18,6 +18,19 @@ $awssecretkey = ''
 # $awsregion = 'us-east-1'
 $awsregion = 'us-east-1'
 
+# AWS Tag(s)
+# $aws_tags = ['myTag1', 'myTag2' ... ]
+$aws_tags = []
+# Specify a tag formatter if your tag value needs formatting
+# ie. if your value is "DB - MyCluster01" you might use the
+#     following to capture just the 'DB' prefix
+# $aws_tags_formatter = '.split(" - ")[0]'
+$aws_tags_formatter = ''
+
+# AWS CloudWatch
+$cloudwatchretries = 3
+$cloudwatchtimeout = 3
+
 # Neustar
 # $neustarkey = '000.0.AAAAAAAAAA.AAAAAAAAAAA.AAAAAAAAAAAAAAAAAAAAA'
 $neustarkey = ''
@@ -40,6 +53,8 @@ $tw_access_token_secret = ''
 # $graphiteserver = '127.0.0.1'
 $graphiteserver = ''
 $graphiteport = 2003
+$graphiteretries = 3
+$graphitetimeout = 3
 
 ##Ganglia Gmond server (may or may not be your Ganglia web server)
 # $gmondserver = '127.0.0.1'
