@@ -14,7 +14,6 @@ require 'config'
 require 'Sendit'
 require 'rubygems'
 require 'twitter'
-require 'json'
 
 if ARGV.length != 1
   puts "I need one argument, the name of the twitter user."
