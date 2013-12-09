@@ -1,4 +1,5 @@
 ##Inputs
+
 # New Relic
 # enter your organization's credentials and output server addresses and copy to config.rb
 # $newrelicaccount = '12345'
@@ -10,34 +11,59 @@ $newrelicaccount = ''
 $newrelicapikey = ''
 
 # AWS
-#$awsaccesskey = 'AAAAAAAAAAAAAAAA'
+# $awsaccesskey = 'AAAAAAAAAAAAAAAA'
 $awsaccesskey = ''
-#$awssecretkey = 'aaaaaaaaaaaaaaaaaaaaaaaaaa'
+# $awssecretkey = 'aaaaaaaaaaaaaaaaaaaaaaaaaa'
 $awssecretkey = ''
-#$awsregion = 'us-east-1'
+# $awsregion = 'us-east-1'
 $awsregion = 'us-east-1'
 
+# AWS Tag(s)
+# $aws_tags = ['myTag1', 'myTag2' ... ]
+$aws_tags = []
+# Specify a tag formatter if your tag value needs formatting
+# ie. if your value is "DB - MyCluster01" you might use the
+#     following to capture just the 'DB' prefix
+# $aws_tags_formatter = '.split(" - ")[0]'
+$aws_tags_formatter = ''
+
+# AWS CloudWatch
+$cloudwatchretries = 3
+$cloudwatchtimeout = 3
+
 # Neustar
-#$neustarkey = '000.0.AAAAAAAAAA.AAAAAAAAAAA.AAAAAAAAAAAAAAAAAAAAA'
+# $neustarkey = '000.0.AAAAAAAAAA.AAAAAAAAAAA.AAAAAAAAAAAAAAAAAAAAA'
 $neustarkey = ''
-#$neustarsecret = 'AAAAAAAA'
+# $neustarsecret = 'AAAAAAAA'
 $neustarsecret = ''
+
+# Twitter API, generate an app/key here: https://dev.twitter.com/apps
+# $tw_consumer_key = 'aaaaaaaaaaaaaaaaaaaa'
+$tw_consumer_key = ''
+# $tw_consumer_secret = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+$tw_consumer_secret = ''
+# $tw_access_token = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+$tw_access_token = ''
+# $tw_access_token_secret = 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
+$tw_access_token_secret = ''
 
 ##Outputs
 
 # Graphite
-#$graphiteserver = '127.0.0.1'
+# $graphiteserver = '127.0.0.1'
 $graphiteserver = ''
 $graphiteport = 2003
+$graphiteretries = 3
+$graphitetimeout = 3
 
 ##Ganglia Gmond server (may or may not be your Ganglia web server)
-#$gmondserver = '127.0.0.1'
+# $gmondserver = '127.0.0.1'
 $gmondserver = ''
 $gmondport = 8649
 
 ##OpenTSDB You'll need to manually tell tsdb about each top level metric you add like this:
 ## tsdb mkmetric newrelic
 ## tsdb mkmetric AWScloudwatch 
-#$opentsdbserver = '127.0.0.1'
+# $opentsdbserver = '127.0.0.1'
 $opentsdbserver = ''
 $opentsdbport = 4242
