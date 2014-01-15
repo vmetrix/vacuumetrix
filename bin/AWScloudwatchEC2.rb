@@ -8,7 +8,7 @@ require 'Sendit'
 require 'rubygems'
 require 'fog'
 require 'optparse'
-require 'system_timer'
+require 'timeout'
 
 # Start back 15m by default
 #  Instances with detailed monitoring will generally have 10+ metrics for this offset
@@ -98,7 +98,7 @@ instance_list.each do |i|
     responses = ''
     metrics.each do |metric|
       begin
-        SystemTimer.timeout_after($cloudwatchtimeout) do
+        Timeout::timeout($cloudwatchtimeout) do
           responses = cloudwatch.get_metric_statistics({
                            'Statistics' => metric[:stat],
                            'StartTime'  => startTime.iso8601,

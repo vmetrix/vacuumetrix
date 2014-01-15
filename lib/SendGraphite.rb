@@ -1,12 +1,12 @@
 ## send it 
 require 'socket'
-require 'system_timer'
+require 'timeout'
 
 def SendGraphite(metricpath, metricvalue, metrictimestamp)
   retries = $graphiteretries
   message = ''
   begin
-  	SystemTimer.timeout_after($graphitetimeout) do 
+  	Timeout::timeout($graphitetimeout) do
 	    message = metricpath + " " + metricvalue.to_s + " " + metrictimestamp.to_s
 	    #puts message
 	    sock = TCPSocket.new($graphiteserver, $graphiteport)
