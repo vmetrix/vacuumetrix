@@ -5,7 +5,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
 require 'Sendit'
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'optparse'
 require 'system_timer'
@@ -120,7 +120,7 @@ instance_list.each do |i|
         puts "\tretries left: #{retries}"
         retry if retries > 0
       end
-      
+
       responses.each do |response|
         metricpath = "AWScloudwatch.EC2." + i.tags["Name"] + "." + metric[:name]
         begin

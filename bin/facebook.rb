@@ -9,7 +9,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 require 'config'
 require 'Sendit'
 ## new versions of ruby don't need the following line
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'curb'
 require 'json'
 
@@ -22,14 +22,14 @@ page = ARGV[0]
 
 metricURL = "https://graph.facebook.com/" + page
 
-response = Curl::Easy.perform(metricURL) do |curl| 
+response = Curl::Easy.perform(metricURL) do |curl|
 end
 
 body = response.body_str
 result = JSON.parse(body)
 
 metricpath = "facebook.likes." + page
-metricvalue = result["likes"]  
+metricvalue = result["likes"]
 metrictimestamp = Time.now.utc.to_i.to_s
 
 Sendit metricpath, metricvalue, metrictimestamp

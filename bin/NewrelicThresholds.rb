@@ -11,7 +11,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'curb'
 require 'json'
 require 'xmlsimple'
@@ -33,7 +33,7 @@ def GetThresholdMetrics(application, appname)
 	data['threshold_value'].each do |item|
 	Sendit "newrelic." + appname.gsub( /[ \.]/, "_") + "." + item['name'].gsub(" ","_"), item['metric_value'], $timenow.to_s
 	end
-  rescue 
+  rescue
 	puts application + appname + "borked"
   end
 end
@@ -46,7 +46,7 @@ end
 appsbody=appsresponse.body_str
 appdata = XmlSimple.xml_in(appsbody, { 'KeyAttr' => 'applications' })
 
-## big ole loop over the returned XML 
+## big ole loop over the returned XML
 appdata['application'].each do |item|
 	appname = item['name'][0].to_s
 	application=item['id'].to_s.gsub!(/\D/,"").to_i.to_s
