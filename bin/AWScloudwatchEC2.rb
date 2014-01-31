@@ -17,8 +17,6 @@ rescue LoadError
   SomeTimer = Timeout
 end
 
-#require 'system_timer'
-
 # Start back 15m by default
 #  Instances with detailed monitoring will generally have 10+ metrics for this offset
 #  Instances w/o detailed monitoring will only have 1-2
