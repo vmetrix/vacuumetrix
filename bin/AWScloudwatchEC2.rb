@@ -105,7 +105,7 @@ instance_list.each do |i|
     responses = ''
     metrics.each do |metric|
       begin
-        SomeTimer.timeout_after($cloudwatchtimeout) do
+        SomeTimer.timeout($cloudwatchtimeout) do
           responses = cloudwatch.get_metric_statistics({
                            'Statistics' => metric[:stat],
                            'StartTime'  => startTime.iso8601,
