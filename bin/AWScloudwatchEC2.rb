@@ -5,10 +5,17 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
 require 'Sendit'
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'optparse'
-require 'system_timer'
+
+begin
+  require 'system_timer'
+  SomeTimer = SystemTimer
+rescue LoadError
+  require 'timeout'
+  SomeTimer = Timeout
+end
 
 # Start back 15m by default
 #  Instances with detailed monitoring will generally have 10+ metrics for this offset
@@ -98,7 +105,7 @@ instance_list.each do |i|
     responses = ''
     metrics.each do |metric|
       begin
-        SystemTimer.timeout_after($cloudwatchtimeout) do
+        SomeTimer.timeout($cloudwatchtimeout) do
           responses = cloudwatch.get_metric_statistics({
                            'Statistics' => metric[:stat],
                            'StartTime'  => startTime.iso8601,
@@ -120,7 +127,7 @@ instance_list.each do |i|
         puts "\tretries left: #{retries}"
         retry if retries > 0
       end
-      
+
       responses.each do |response|
         metricpath = "AWScloudwatch.EC2." + i.tags["Name"] + "." + metric[:name]
         begin

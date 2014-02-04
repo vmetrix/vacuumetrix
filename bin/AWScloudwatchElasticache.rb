@@ -2,13 +2,13 @@
 ## Elasticache stats
 ### David Lutz
 ### 2012-08-01
- 
+
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
 require 'Sendit'
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 
 startTime = Time.now.utc-180
@@ -42,7 +42,7 @@ metrics_list.each do |met|
            'Dimensions' => met['Dimensions']
 	           }).body['GetMetricStatisticsResult']['Datapoints']
 
-    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + metricName + "." + cacheNodeId 
+    metricpath = "AWScloudwatch.Elasticache." + cacheClusterId + "." + metricName + "." + cacheNodeId
     begin
         metricvalue = response.first[statistic]
     rescue
