@@ -29,6 +29,8 @@ def GetThresholdMetrics(application, appname)
 
 	body=response.body_str
 	data = XmlSimple.xml_in(body, { 'KeyAttr' => 'threshold_values' })
+	raise 'No data returned from New Relic API' if data['content'] === "\n"
+	raise "Error returned from New Relic API: #{data['content']}" if data['content']
 	data['threshold_value'].each do |item|
 	Sendit "newrelic." + appname.gsub( /[ \.]/, "_") + "." + item['name'].gsub(" ","_"), item['metric_value'], $timenow.to_s
 	end
