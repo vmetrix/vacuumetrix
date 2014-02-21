@@ -51,6 +51,7 @@ $tw_access_token_secret = ''
 
 # Graphite
 # $graphiteserver = '127.0.0.1'
+$graphiteprefix = ''
 $graphiteserver = ''
 $graphiteport = 2003
 $graphiteretries = 3

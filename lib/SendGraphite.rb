@@ -10,6 +10,7 @@ end
 
 def SendGraphite(metricpath, metricvalue, metrictimestamp)
   retries = $graphiteretries
+  metricpath = "#{$graphiteprefix}.#{metricpath}" if $graphiteprefix && !$graphiteprefix.empty?
   message = ''
   begin
   	SomeTimer.timeout($graphitetimeout) do
