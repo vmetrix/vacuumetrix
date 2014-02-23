@@ -49,9 +49,11 @@ startTime = Time.now.utc - options[:start_offset].to_i
 endTime   = Time.now.utc - options[:end_offset].to_i
 
 compute     = Fog::Compute.new( :provider => :aws,
+              :region => $awsregion,
               :aws_access_key_id => $awsaccesskey,
               :aws_secret_access_key => $awssecretkey)
 cloudwatch  = Fog::AWS::CloudWatch.new(
+              :region => $awsregion,
               :aws_access_key_id => $awsaccesskey,
               :aws_secret_access_key => $awssecretkey)
 
