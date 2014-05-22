@@ -11,9 +11,14 @@ end
 def SendGraphite(metricpath, metricvalue, metrictimestamp)
   retries = $graphiteretries
   message = ''
+  if not defined? $graphiteprefix
+  	$graphiteprefix = ''
+  else
+  	if  $graphiteprefix != '' and $graphiteprefix[-1] != '.'
+  		$graphiteprefix += '.'
   begin
   	SomeTimer.timeout($graphitetimeout) do
-	    message = metricpath + " " + metricvalue.to_s + " " + metrictimestamp.to_s
+	    message = $graphiteprefix +  metricpath + " " + metricvalue.to_s + " " + metrictimestamp.to_s
 	    #puts message
 	    sock = TCPSocket.new($graphiteserver, $graphiteport)
 	    sock.puts(message)
