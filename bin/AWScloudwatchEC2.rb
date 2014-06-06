@@ -48,12 +48,8 @@ optparse.parse!
 startTime = Time.now.utc - options[:start_offset].to_i
 endTime   = Time.now.utc - options[:end_offset].to_i
 
-compute     = Fog::Compute.new( :provider => :aws,
-              :aws_access_key_id => $awsaccesskey,
-              :aws_secret_access_key => $awssecretkey)
-cloudwatch  = Fog::AWS::CloudWatch.new(
-              :aws_access_key_id => $awsaccesskey,
-              :aws_secret_access_key => $awssecretkey)
+compute     = Fog::Compute.new($awscredential.merge({:provider => :aws}))
+cloudwatch  = Fog::AWS::CloudWatch.new($awscredential)
 
 instance_list = compute.servers.all
 

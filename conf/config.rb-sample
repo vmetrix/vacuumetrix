@@ -10,11 +10,20 @@ $newrelicaccount = ''
 # $newrelicapikey = '123123123123123123123'
 $newrelicapikey = ''
 
-# AWS
-# $awsaccesskey = 'AAAAAAAAAAAAAAAA'
-$awsaccesskey = ''
-# $awssecretkey = 'aaaaaaaaaaaaaaaaaaaaaaaaaa'
-$awssecretkey = ''
+# AWS Crendential - Using Keys
+# $awscredential = {
+#   :aws_secret_access_key => 'aaaaaaaaaaaaaaaaaaaaaaaaaa',
+#   :aws_access_key_id => 'AAAAAAAAAAAAAAAA'
+# }
+$awscredential = {
+  :aws_secret_access_key => '',
+  :aws_access_key_id => ''
+}
+# AWS Crendential - Using IAM instance profile
+# If using IAM profile: i) uncomment following & ii) comment "Using Keys" section above
+# $awscredential = {
+#   :use_iam_profile => true
+# }
 # $awsregion = 'us-east-1'
 $awsregion = 'us-east-1'
 
@@ -63,7 +72,7 @@ $gmondport = 8649
 
 ##OpenTSDB You'll need to manually tell tsdb about each top level metric you add like this:
 ## tsdb mkmetric newrelic
-## tsdb mkmetric AWScloudwatch 
+## tsdb mkmetric AWScloudwatch
 # $opentsdbserver = '127.0.0.1'
 $opentsdbserver = ''
 $opentsdbport = 4242

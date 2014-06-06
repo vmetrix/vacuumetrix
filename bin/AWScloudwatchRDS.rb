@@ -46,7 +46,7 @@ if ARGV.length > 0
     dbNames << db
   end
 else
-  rds = Fog::AWS::RDS.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+  rds = Fog::AWS::RDS.new($awscredential)
   rds.servers.all.each do |s|
     dbNames << s.id
   end
@@ -71,7 +71,7 @@ metricNames = {"CPUUtilization" => "Percent",
 }
 
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cloudwatch = Fog::AWS::CloudWatch.new($awscredential)
 
 dbNames.each do |db|
   metricNames.each do |metricName, unit|
