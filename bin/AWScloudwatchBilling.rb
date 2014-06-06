@@ -40,7 +40,7 @@ startTime = Time.now.utc - options[:start_offset].to_i
 endTime  = Time.now.utc - options[:end_offset].to_i
 
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cloudwatch = Fog::AWS::CloudWatch.new($awscredential)
 
 %w( AmazonCloudFront AmazonDynamoDB AmazonEC2 AmazonRDS AmazonS3 AmazonSNS AWSDataTransfer ).each do |name|
   responses = cloudwatch.get_metric_statistics({

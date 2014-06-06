@@ -69,7 +69,7 @@ metricNames = {"RequestCount" => "Sum",
 
 unit = 'Count'
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
+cloudwatch = Fog::AWS::CloudWatch.new($awscredential.merge({:region => $awsregion}))
 
 lbs.each do |table|
   metricNames.each do |metricName, statistic|
@@ -110,7 +110,7 @@ metricNames = {"Maximum" => "Latency",
 
 unit = 'Seconds'
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cloudwatch = Fog::AWS::CloudWatch.new($awscredential)
 
 lbs.each do |table|
   metricNames.each do |statistic, metricName|
@@ -142,4 +142,3 @@ lbs.each do |table|
     end
   end
 end
-
