@@ -14,6 +14,7 @@ require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 
 compute = Fog::Compute.new(	:provider => :aws,
+							:region => $awsregion,
 							:aws_access_key_id => $awsaccesskey,
 							:aws_secret_access_key => $awssecretkey)
 
