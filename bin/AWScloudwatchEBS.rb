@@ -47,7 +47,7 @@ if ARGV.length > 0
     volumeIds << vol
   end
 else
-  compute = Fog::Compute.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+  compute = Fog::Compute.new(:provider => :aws, :region => $awsregion, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
   compute.volumes.all.each do |vol|
     volumeIds << vol.id
   end
@@ -106,7 +106,7 @@ metrics = [
     }
 ]
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cloudwatch = Fog::AWS::CloudWatch.new(:region => $awsregion, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
 
 volumeIds.each do |volume|
   metrics.each do |metric|
