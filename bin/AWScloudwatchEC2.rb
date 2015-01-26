@@ -8,6 +8,7 @@ require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'optparse'
+require 'thread'
 
 begin
   require 'system_timer'
@@ -20,10 +21,14 @@ end
 # Start back 15m by default
 #  Instances with detailed monitoring will generally have 10+ metrics for this offset
 #  Instances w/o detailed monitoring will only have 1-2
+# 
+# You probably don't want to go over 8 threads, unless AWS raises the rate limit on GetLogEvents > 10/sec
+# http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/cloudwatch_limits.html
 # Adjust for your environment
 options = {
     :start_offset => 900,
-    :end_offset   => 0
+    :end_offset   => 0,
+    :threads      => 4
 }
 
 optparse = OptionParser.new do |opts|
@@ -37,6 +42,10 @@ optparse = OptionParser.new do |opts|
     options[:end_offset] = e
   end
 
+  opts.on('-t', '--threads [NUMBER_OF_THREADS]', 'Number of threads to use for querying CloudWatch. Default 4') do |t|
+    options[:threads] = t
+  end
+
   opts.on('-h', '--help', '') do
     puts opts
     exit
@@ -45,21 +54,21 @@ end
 
 optparse.parse!
 
-startTime = Time.now.utc - options[:start_offset].to_i
-endTime   = Time.now.utc - options[:end_offset].to_i
+$startTime = Time.now.utc - options[:start_offset].to_i
+$endTime   = Time.now.utc - options[:end_offset].to_i
 
 compute     = Fog::Compute.new( :provider => :aws,
               :region => $awsregion,
               :aws_access_key_id => $awsaccesskey,
               :aws_secret_access_key => $awssecretkey)
-cloudwatch  = Fog::AWS::CloudWatch.new(
+$cloudwatch  = Fog::AWS::CloudWatch.new(
               :region => $awsregion,
               :aws_access_key_id => $awsaccesskey,
               :aws_secret_access_key => $awssecretkey)
 
 instance_list = compute.servers.all
 
-metrics = [
+$metrics = [
     {
         :name => "CPUUtilization",
         :unit => "Percent",
@@ -97,7 +106,7 @@ metrics = [
     }
 ]
 
-instance_list.each do |i|
+def fetch_and_send(i)
 
   # Only fetch metrics if instance
   #  has a 'Name' tag and it isn't the instance id.
@@ -105,13 +114,13 @@ instance_list.each do |i|
   if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
     retries = $cloudwatchretries
     responses = ''
-    metrics.each do |metric|
+    $metrics.each do |metric|
       begin
         SomeTimer.timeout($cloudwatchtimeout) do
-          responses = cloudwatch.get_metric_statistics({
+          responses = $cloudwatch.get_metric_statistics({
                            'Statistics' => metric[:stat],
-                           'StartTime'  => startTime.iso8601,
-                           'EndTime'    => endTime.iso8601,
+                           'StartTime'  => $startTime.iso8601,
+                           'EndTime'    => $endTime.iso8601,
                            'Period'     => 60,
                            'Unit'       => metric[:unit],
                            'MetricName' => metric[:name],
@@ -145,3 +154,18 @@ instance_list.each do |i|
 
   end
 end
+
+work_q = Queue.new
+instance_list.each{|i| work_q.push i}
+workers = (0...options[:threads].to_i).map do
+  Thread.new do
+    begin
+      while i = work_q.pop(true)
+        fetch_and_send(i)
+      end
+    rescue ThreadError
+    end
+  end
+end; "ok"
+workers.map(&:join); "ok"
+
