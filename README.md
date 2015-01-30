@@ -23,7 +23,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 #Installation
 
 ##git clone this repo
-    git clone https://github.com/99designs/vacuumetrix.git 	
+    git clone https://github.com/vmetrix/vacuumetrix
 
 ## Install dependancies
 ### Debian/Ubuntu
