@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'vacuumetrix'
-  s.version     = '0.0.1'
+  s.version     = '0.0.2'
   s.homepage    = 'https://github.com/99designs/vacuumetrix'
   s.description = <<-EOF
     Sucks up metrics from various external sources and puts the data into internal systems.
