@@ -9,7 +9,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 require 'config'
 require 'Sendit'
 ## new versions of ruby don't need the following line
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'curb'
 require 'json'
 

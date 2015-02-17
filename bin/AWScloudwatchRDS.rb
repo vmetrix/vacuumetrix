@@ -11,7 +11,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
 require 'Sendit'
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'json'
 require 'optparse'
@@ -46,7 +46,7 @@ if ARGV.length > 0
     dbNames << db
   end
 else
-  rds = Fog::AWS::RDS.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+  rds = Fog::AWS::RDS.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
   rds.servers.all.each do |s|
     dbNames << s.id
   end
@@ -65,10 +65,13 @@ metricNames = {"CPUUtilization" => "Percent",
                "WriteLatency" => "Seconds",
                "WriteThroughput" => "Bytes/Second",
                "ReplicaLag" => "Seconds",
+               "SwapUsage" => "Bytes",
+               "BinLogDiskUsage" => "Bytes",
+               "DiskQueueDepth" => "Count",
 }
 
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 
 dbNames.each do |db|
   metricNames.each do |metricName, unit|

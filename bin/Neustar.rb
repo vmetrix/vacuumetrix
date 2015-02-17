@@ -9,7 +9,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
 require 'Sendit'
-require 'rubygems'
+require 'rubygems' if RUBY_VERSION < "1.9"
 require 'json'
 require 'digest/md5'
 require 'curb'
@@ -25,7 +25,7 @@ $sig = Digest::MD5.hexdigest( $neustarkey+$neustarsecret+timestamp )
 def lookupNeustarSamples(id, name)
   samplesURL = "http://api.neustar.biz/performance/monitor/1.0/#{id}/sample?startDate=#{$startTime.strftime("%FT%H:%M")}&endDate=#{$endTime.strftime("%FT%H:%M")}&apikey=#{$neustarkey}&sig=#{$sig}"
 
-  response = Curl::Easy.perform(samplesURL) do |curl| 
+  response = Curl::Easy.perform(samplesURL) do |curl|
   end
 
   samplesbody=response.body_str
@@ -46,14 +46,14 @@ def lookupNeustarSamples(id, name)
       Sendit metricpath, "1" , metrictimestamp
     end
 
-  end 
+  end
 
 end
 
 
 metricURL = "http://api.neustar.biz/performance/monitor/1.0?apikey=#{$neustarkey}&sig=#{$sig}"
 
-response = Curl::Easy.perform(metricURL) do |curl| 
+response = Curl::Easy.perform(metricURL) do |curl|
 end
 
 body=response.body_str
