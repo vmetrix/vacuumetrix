@@ -14,8 +14,21 @@ require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'optparse'
 
+options = {
+    :start_offset => 180,
+    :end_offset   => 120
+}
+
 optparse = OptionParser.new do|opts|
-  opts.banner = "Usage: AWScloudwatchElasticache.rb memcache/redis"
+  opts.banner = "Usage: AWScloudwatchElasticache.rb memcache/redis [options]"
+
+  opts.on('-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 1200') do |s|
+    options[:start_offset] = s
+  end
+
+  opts.on('-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 600') do |e|
+    options[:end_offset] = e
+  end
 
   # This displays the help screen, all programs are
   # assumed to have this option.
@@ -35,8 +48,8 @@ end
 
 engine = ARGV[0]
 
-startTime = Time.now.utc-180
-endTime  = Time.now.utc-120
+startTime = Time.now.utc - options[:start_offset].to_i
+endTime   = Time.now.utc - options[:end_offset].to_i
 
 cw = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 metrics_list = cw.list_metrics({
@@ -50,7 +63,7 @@ metrics_list.each do |met|
 
   cacheClusterId =  met['Dimensions'].first['Value']
   cacheNodeId = met['Dimensions'].last['Value']
-  
+
   if engine == 'memcache'
     metricNames = ['GetMisses', 'GetHits', 'CurrConnections', 'CmdGet', 'CmdSet', 'CurrItems']
   end
@@ -128,7 +141,7 @@ metrics_list.each do |met|
 
   cacheClusterId =  met['Dimensions'].first['Value']
   cacheNodeId = met['Dimensions'].last['Value']
-  
+
   if engine == 'memcache'
     metricNames = ['BytesReadIntoMemcached', 'BytesUsedForCacheItems', 'BytesWrittenOutFromMemcached']
   end
@@ -162,6 +175,3 @@ metrics_list.each do |met|
     Sendit metricpath, metricvalue, metrictimestamp
   end
 end
-
-
-

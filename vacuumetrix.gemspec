@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'vacuumetrix'
-  s.version     = '0.0.3'
+  s.version     = '0.0.4'
   s.homepage    = 'https://github.com/99designs/vacuumetrix'
   s.description = <<-EOF
     Sucks up metrics from various external sources and puts the data into internal systems.
@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
     Neustar.rb
     NewrelicEnduser.rb
     NewrelicThresholds.rb
-    twitter.rb
+    twitter_followers.rb
   }
 
   s.add_dependency "json", "~> 1.7.6"
@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
     bin/Neustar.rb
     bin/NewrelicEnduser.rb
     bin/NewrelicThresholds.rb
-    bin/twitter.rb
+    bin/twitter_followers.rb
     lib/SendGanglia.rb
     lib/SendGraphite.rb
     lib/Sendit.rb
