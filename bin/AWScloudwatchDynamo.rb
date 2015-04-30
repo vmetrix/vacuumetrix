@@ -44,8 +44,26 @@ if ARGV.length == 0
 end
 
 tables = []
-ARGV.each do |table|
-  tables << table
+if ARGV.any? { |a| a.include?("*") }
+  dynamo = Fog::AWS::DynamoDB.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
+  all_tables = []
+  q = {}
+  loop do
+    resp = dynamo.list_tables(q)
+    all_tables += resp.body['TableNames']
+    break unless resp.body['LastEvaluatedTableName']
+    q['ExclusiveStartTableName'] = resp.body['LastEvaluatedTableName']
+  end
+  ARGV.each do |pat|
+    all_tables.each do |tab|
+      tables << tab if File.fnmatch(pat, tab)
+    end
+  end
+  tables.uniq!
+else
+  ARGV.each do |table|
+    tables << table
+  end
 end
 
 startTime = Time.now.utc - options[:start_offset].to_i
@@ -81,7 +99,7 @@ operationLevelMetrics = [
 ]
 
 
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 
 tables.each do |table|
   operationLevelMetrics.each do |metric|
