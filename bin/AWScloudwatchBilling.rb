@@ -42,7 +42,19 @@ endTime  = Time.now.utc - options[:end_offset].to_i
 
 cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
 
-%w( AmazonCloudFront AmazonDynamoDB AmazonEC2 AmazonRDS AmazonS3 AmazonSNS AWSDataTransfer ).each do |name|
+# Query for all existing Billing Metrics in CloudWatch, this should catch new services as they are added
+billing_services = []
+billing_metrics = cloudwatch.list_metrics({'Namespace' => "AWS/Billing", 'Dimensions' => [{'Name' => "ServiceName"}]})
+metrics = billing_metrics[:body]['ListMetricsResult']['Metrics']
+metrics.each do |metric|
+  metric['Dimensions'].each do |dimension|
+    if dimension['Name'] == "ServiceName"
+      billing_services << dimension['Value']
+    end
+  end
+end
+
+billing_services.each do |name|
   responses = cloudwatch.get_metric_statistics({
                                                    'Statistics' => "Maximum",
                                                    'StartTime' => startTime.iso8601,
