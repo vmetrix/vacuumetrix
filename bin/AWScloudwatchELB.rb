@@ -13,14 +13,27 @@ require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'json'
 require 'optparse'
+require 'thread'
+
+begin
+  require 'system_timer'
+rescue LoadError
+  require 'timeout'
+  SomeTimer = Timeout
+end
 
 options = {
     :start_offset => 180,
-    :end_offset => 120
+    :end_offset => 120,
+    :threads => 1
 }
 
 optparse = OptionParser.new do|opts|
-  opts.banner = "Usage: AWScloudwatchELB.rb [options] lb_names"
+  opts.banner = "Usage: AWScloudwatchELB.rb [options] [--all|lb_names]"
+
+  opts.on( '-a', '--all', 'Collect metrics for all ELBs') do
+    options[:all] = true
+  end
 
   opts.on( '-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 180') do |s|
     options[:start_offset] = s
@@ -30,6 +43,10 @@ optparse = OptionParser.new do|opts|
     options[:end_offset] = e
   end
 
+  opts.on('-t', '--threads [NUMBER_OF_THREADS]', 'Number of threads to use for querying CloudWatch. Default 1') do |t|
+    options[:threads] = t
+  end
+
   # This displays the help screen, all programs are
   # assumed to have this option.
   opts.on( '-h', '--help', '' ) do
@@ -37,109 +54,100 @@ optparse = OptionParser.new do|opts|
     exit
   end
 
-
 end
 
 optparse.parse!
 
-if ARGV.length == 0
-  puts "Must specifiy at least one load balancer name to pull metrics for"
-  exit 1
-end
+elb = Fog::AWS::ELB.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
+$cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 
 lbs = []
-ARGV.each do |lb|
-  lbs << lb
+if options[:all]
+  my_lb_list = elb.load_balancers.all
+  my_lb_list.each do |my_lb|
+    lbs << my_lb.id
+  end
+elsif ARGV.length == 0
+  puts "Must specifiy at least one load balancer name to pull metrics for"
+  exit 1
+else
+  ARGV.each do |lb|
+    lbs << lb
+  end
 end
 
-startTime = Time.now.utc - options[:start_offset].to_i
-endTime  = Time.now.utc - options[:end_offset].to_i
+$startTime = Time.now.utc - options[:start_offset].to_i
+$endTime  = Time.now.utc - options[:end_offset].to_i
 
-
-metricNames = {"RequestCount" => "Sum",
-               "HealthyHostCount" => "Minimum",
-               "UnHealthyHostCount" => "Maximum",
-               "HTTPCode_ELB_5XX" => "Sum",
-               "HTTPCode_ELB_4XX" => "Sum",
-               "HTTPCode_Backend_2XX" => "Sum",
-               "HTTPCode_Backend_3XX" => "Sum",
-               "HTTPCode_Backend_4XX" => "Sum",
-               "HTTPCode_Backend_5XX" => "Sum"
+$metricNames = {"RequestCount" => ["Sum"],
+               "HealthyHostCount" => ["Minimum"],
+               "UnHealthyHostCount" => ["Maximum"],
+               "HTTPCode_ELB_5XX" => ["Sum"],
+               "HTTPCode_ELB_4XX" => ["Sum"],
+               "HTTPCode_Backend_2XX" => ["Sum"],
+               "HTTPCode_Backend_3XX" => ["Sum"],
+               "HTTPCode_Backend_4XX" => ["Sum"],
+               "HTTPCode_Backend_5XX" => ["Sum"],
+               "Latency" => ["Maximum", "Average"]
 }
 
-unit = 'Count'
-
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
-
-lbs.each do |table|
-  metricNames.each do |metricName, statistic|
-    responses = cloudwatch.get_metric_statistics({
+def fetch_and_send(lb)
+  retries = $cloudwatchretries
+  responses = ''
+  $metricNames.each do |metricName, statistics|
+    unit = metricName == "Latency" ? 'Seconds' : 'Count'
+    statistics.each do |statistic|
+    begin
+      SomeTimer.timeout($cloudwatchtimeout) do
+        responses = $cloudwatch.get_metric_statistics({
                                                      'Statistics' => statistic,
-                                                     'StartTime' => startTime.iso8601,
-                                                     'EndTime' => endTime.iso8601,
+                                                     'StartTime' => $startTime.iso8601,
+                                                     'EndTime' => $endTime.iso8601,
                                                      'Period' => 60,
                                                      'Unit' => unit,
                                                      'MetricName' => metricName,
                                                      'Namespace' => 'AWS/ELB',
                                                      'Dimensions' => [{
                                                                           'Name' => 'LoadBalancerName',
-                                                                          'Value' => table
+                                                                          'Value' => lb
                                                                       }]
                                                  }).body['GetMetricStatisticsResult']['Datapoints']
-
-    responses.each do |response|
-      metricpath = "AWScloudwatch.ELB." + table + "." + metricName
-      begin
-        metricvalue = response[statistic]
-        metrictimestamp = response["Timestamp"].to_i.to_s
-      rescue
-        metricvalue = 0
-        metrictimestamp = endTime.to_i.to_s
+        end
+      rescue => e
+        puts "error fetching metric :: " + metricName + " :: " + lb
+        puts "\terror: #{e}"
+        retries -= 1
+        puts "\tretries left: #{retries}"
+        retry if retries > 0
       end
 
-      Sendit metricpath, metricvalue, metrictimestamp
+      responses.each do |response|
+        metricpath = "AWScloudwatch.ELB." + lb + "." + metricName
+        metricpath += "_#{statistic}" if metricName == 'Latency'
+        begin
+          metricvalue = response[statistic]
+          metrictimestamp = response["Timestamp"].to_i.to_s
+        rescue
+          metricvalue = 0
+          metrictimestamp = endTime.to_i.to_s
+        end
+
+        Sendit metricpath, metricvalue, metrictimestamp
+      end
     end
   end
 end
 
-#### also get latency (measured in seconds)
-
-metricNames = {"Maximum" => "Latency",
-               "Average" => "Latency",
-}
-
-unit = 'Seconds'
-
-cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
-
-lbs.each do |table|
-  metricNames.each do |statistic, metricName|
-    responses = cloudwatch.get_metric_statistics({
-                                                    'Statistics' => statistic,
-                                                    'StartTime' => startTime.iso8601,
-                                                    'EndTime' => endTime.iso8601,
-                                                    'Period' => 60,
-                                                    'Unit' => unit,
-                                                    'MetricName' => metricName,
-                                                    'Namespace' => 'AWS/ELB',
-                                                    'Dimensions' => [{
-                                                                         'Name' => 'LoadBalancerName',
-                                                                         'Value' => table
-                                                                     }]
-                                                }).body['GetMetricStatisticsResult']['Datapoints']
-
-    metricpath = "AWScloudwatch.ELB." + table + "." + metricName + "_" + statistic
-    responses.each do |response|
-      begin
-        metricvalue = response[statistic]
-        metrictimestamp = response["Timestamp"].to_i.to_s
-      rescue
-        metricvalue = 0
-        metrictimestamp = endTime.to_i.to_s
+work_q = Queue.new
+lbs.each{|lb| work_q.push lb}
+workers = (0...options[:threads].to_i).map do
+  Thread.new do
+    begin
+      while lb = work_q.pop(true)
+        fetch_and_send(lb)
       end
-
-      Sendit metricpath, metricvalue, metrictimestamp
+    rescue ThreadError
     end
   end
-end
-
+end; "ok"
+workers.map(&:join); "ok"
