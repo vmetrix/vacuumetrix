@@ -53,6 +53,7 @@ The config.rb file contains all the local configuration variables.
  update config.rb with your organization's AWSAccessKeyId and AWSSecretKey with permission to read the Cloudwatch API
 
     gem install fog
+    gem install aws-sdk
 
 ##Neustar
   update config.rb with your organization's API Key and Secret
