@@ -30,6 +30,11 @@ This is a good thing to do because whilst all the external SAAS services we use 
 
     apt-get install ruby build-essential libcurl3 libcurl3-gnutls libcurl4-openssl-dev
 
+### Amazon Linux
+
+    yum install ruby-devel libxslt-devel libxml2-devel
+    gem install nokogiri -- --use-system-libraries
+
 ### Ruby Gems
 
     gem install json 
