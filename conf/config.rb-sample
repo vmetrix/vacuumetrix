@@ -27,7 +27,7 @@ $aws_tags = []
 # $aws_tags_formatter = '.split(" - ")[0]'
 # or
 #   to remove spaces from your tags
-# $aws_tags_formatter = '.gsub(" ","_")''
+# $aws_tags_formatter = '.gsub(" ","_")'
 $aws_tags_formatter = ''
 
 # AWS CloudWatch
