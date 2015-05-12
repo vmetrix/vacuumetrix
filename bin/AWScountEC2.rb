@@ -48,13 +48,15 @@ if !$aws_tags.empty?
   		if !i.tags.nil? && !i.tags[tag].nil?
 
   			tag_value			= i.tags[tag]
-  			formatted_tag = "tag_value" + $aws_tags_formatter
-  			formatted_tag = eval(formatted_tag)
+  			formatted_tag_value = "tag_value" + $aws_tags_formatter
+  			formatted_tag_value = eval(formatted_tag_value)
+        formatted_tag_value = formatted_tag_value.gsub(".","_")
+        tag_plus_value = "#{tag}.#{formatted_tag_value}"
 
-  			if tag_report[formatted_tag].nil?
-  				tag_report[formatted_tag] = 1
+  			if tag_report[tag_plus_value].nil?
+  				tag_report[tag_plus_value] = 1
   			else
-  				tag_report[formatted_tag] = tag_report[formatted_tag] + 1
+  				tag_report[tag_plus_value] = tag_report[tag_plus_value] + 1
   			end
 
   		end
@@ -63,7 +65,8 @@ if !$aws_tags.empty?
 end
 
 tag_report.each do |tag, count|
-  metricpath = "AWScountTags" + "." + tag.gsub(".","_")
+  ## metricpath = "AWScountTags" + "." + tag.gsub(".","_")
+  metricpath = "AWScountTags" + "." + tag
   metricvalue = count
   metrictimestamp=Time.now.utc.to_i.to_s
   Sendit metricpath, metricvalue, metrictimestamp
