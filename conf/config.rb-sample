@@ -25,6 +25,9 @@ $aws_tags = []
 # ie. if your value is "DB - MyCluster01" you might use the
 #     following to capture just the 'DB' prefix
 # $aws_tags_formatter = '.split(" - ")[0]'
+# or
+#   to remove spaces from your tags
+# $aws_tags_formatter = '.gsub(" ","_")''
 $aws_tags_formatter = ''
 
 # AWS CloudWatch
