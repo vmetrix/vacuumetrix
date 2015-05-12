@@ -53,6 +53,7 @@ The config.rb file contains all the local configuration variables.
  update config.rb with your organization's AWSAccessKeyId and AWSSecretKey with permission to read the Cloudwatch API
 
     gem install fog
+    gem install aws-sdk
 
 ##Neustar
   update config.rb with your organization's API Key and Secret
@@ -99,7 +100,7 @@ Get RDS metrics.  Optionally supply the name of the Relational Database Service 
 Count the number of EC2 instances of each flavor.  Also, capture instance tags if specified in config.  No arguments.
 
 ##AWScloudwatchElasticache.rb
-Get Elasticache metrics.  Interesting ones anyway.  No arguments.
+Get Elasticache metrics.  Interesting ones anyway. Supply the name of the Engine that can be "redis" or "memcache". (if use both need setup 2 cron lines)
 
 ##AWScloudwatchDynamo.rb
 Get DynamoDB metrics. Specify table_name as argument and optionally --start-offset and --end-offset (in seconds). 
