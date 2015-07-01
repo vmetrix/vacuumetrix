@@ -77,11 +77,10 @@ $cloudwatch  = Fog::AWS::CloudWatch.new(
               :aws_access_key_id => $awsaccesskey,
               :aws_secret_access_key => $awssecretkey)
 
-# instance_list = compute.servers.all
 if ARGV.length > 0
   instance_list = [ compute.servers.get(ARGV[0]) ]
 else
-  instance_list = [ compute.servers.get('i-db113a2c') ]
+  instance_list = compute.servers.all
 end
 
 $metrics = [

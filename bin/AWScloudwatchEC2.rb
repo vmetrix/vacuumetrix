@@ -111,8 +111,7 @@ def fetch_and_send(i)
   # Only fetch metrics if instance
   #  has a 'Name' tag and it isn't the instance id.
 
-  # if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
-  if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-db113a2c')
+  if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
     retries = $cloudwatchretries
     responses = ''
     $metrics.each do |metric|

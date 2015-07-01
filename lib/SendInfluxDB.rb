@@ -42,4 +42,4 @@ def SendInfluxDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
   end
 end
 
-# SendInfluxDB('CPUUtilization_percent', 'instance_id=i-db113a2c,region=us-west-2,name=x2fw_influxdb9_test,CostCenter=45312,Owner=techinfraperfmet@nordstrom_com,Service=metrics', 5, #DATE)
+# SendInfluxDB('CPUUtilization', 'instance_id=i-abcd1234,region=us-west-2,name=influxdb9_test,CostCenter=12345,Owner=me@example_com,Service=metrics', 5, #DATE)

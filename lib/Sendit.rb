@@ -45,13 +45,6 @@ def Sendit(metricpath, metricvalue, metrictimestamp, metrictags = nil)
   end
 
   if $send_to[:opentsdb]
-    # OpenTSDB requires at least one tag, if we don't extract them, make one
-    tags = ''
-    unless metrictags
-      a = metricpath.split(/\./,2)
-      metricpath = a[0]
-      metrictags = "tag=" + a[1]
-    end
     SendOpenTSDB metricpath, metricvalue, metrictimestamp, metrictags
   end
 end
