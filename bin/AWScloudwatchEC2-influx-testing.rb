@@ -4,7 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'optparse'
@@ -12,10 +12,10 @@ require 'thread'
 
 begin
   require 'system_timer'
-  SomeTimer = SystemTimer
+  $SomeTimer = SystemTimer
 rescue LoadError
   require 'timeout'
-  SomeTimer = Timeout
+  $SomeTimer = Timeout
 end
 
 # Start back 15m by default
@@ -25,7 +25,7 @@ end
 # You probably don't want to go over 8 threads, unless AWS raises the rate limit on GetLogEvents > 10/sec
 # http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/cloudwatch_limits.html
 # Adjust for your environment
-options = {
+$options = {
     :start_offset => 900,
     :end_offset   => 0,
     :threads      => 4
@@ -34,16 +34,24 @@ options = {
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: AWScloudwatchEC2.rb [options]"
 
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
   opts.on('-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 900 (15m)') do |s|
-    options[:start_offset] = s
+    $options[:start_offset] = s
   end
 
   opts.on('-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the end of the metrics period. Default 0 (now)') do |e|
-    options[:end_offset] = e
+    $options[:end_offset] = e
   end
 
   opts.on('-t', '--threads [NUMBER_OF_THREADS]', 'Number of threads to use for querying CloudWatch. Default 4') do |t|
-    options[:threads] = t
+    $options[:threads] = t
   end
 
   opts.on('-h', '--help', '') do
@@ -54,8 +62,11 @@ end
 
 optparse.parse!
 
-$startTime = Time.now.utc - options[:start_offset].to_i
-$endTime   = Time.now.utc - options[:end_offset].to_i
+# Moving this down so Sendit can use options
+require 'Sendit'
+
+$startTime = Time.now.utc - $options[:start_offset].to_i
+$endTime   = Time.now.utc - $options[:end_offset].to_i
 
 compute     = Fog::Compute.new( :provider => :aws,
               :region => $awsregion,
@@ -66,7 +77,12 @@ $cloudwatch  = Fog::AWS::CloudWatch.new(
               :aws_access_key_id => $awsaccesskey,
               :aws_secret_access_key => $awssecretkey)
 
-instance_list = compute.servers.all
+# instance_list = compute.servers.all
+if ARGV.length > 0
+  instance_list = [ compute.servers.get(ARGV[0]) ]
+else
+  instance_list = [ compute.servers.get('i-db113a2c') ]
+end
 
 $metrics = [
     {
@@ -111,13 +127,12 @@ def fetch_and_send(i)
   # Only fetch metrics if instance
   #  has a 'Name' tag and it isn't the instance id.
 
-  # if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
-  if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-db113a2c')
+  if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
     retries = $cloudwatchretries
     responses = ''
     $metrics.each do |metric|
       begin
-        SomeTimer.timeout($cloudwatchtimeout) do
+        $SomeTimer.timeout($cloudwatchtimeout) do
           responses = $cloudwatch.get_metric_statistics({
                            'Statistics' => metric[:stat],
                            'StartTime'  => $startTime.iso8601,
@@ -141,11 +156,17 @@ def fetch_and_send(i)
       end
 
       responses.each do |response|
-        metricpath = "AWScloudwatch.EC2." + i.tags["Name"] + "." + metric[:name]
+        # metricpath = "AWScloudwatch.EC2." + i.tags["Name"] + "." + metric[:name]
+        metricpath = "AWScloudwatch.EC2." + i.id + "." + metric[:name]
+        my_tags = i.tags
+        my_tags.delete_if {|_, v| v.to_s.empty?}
+        my_tags[:instance_id] = i.id
+        my_tags[:flavor_id] = i.flavor_id
+        my_tags[:availability_zone] = i.availability_zone
         begin
           metricvalue     = response[metric[:stat]]
           metrictimestamp = response["Timestamp"].to_i.to_s
-          Sendit metricpath, metricvalue, metrictimestamp
+          Sendit metricpath, metricvalue, metrictimestamp, my_tags
         rescue
           # ignored
         end
@@ -158,7 +179,7 @@ end
 
 work_q = Queue.new
 instance_list.each{|i| work_q.push i}
-workers = (0...options[:threads].to_i).map do
+workers = (0...$options[:threads].to_i).map do
   Thread.new do
     begin
       while i = work_q.pop(true)
