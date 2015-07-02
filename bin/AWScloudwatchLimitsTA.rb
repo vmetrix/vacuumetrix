@@ -6,13 +6,13 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'json'
 require 'aws-sdk'
 require 'optparse'
 
-options = {
+$options = {
     :start_offset => 180,
     :end_offset => 120
 }
@@ -21,11 +21,11 @@ optparse = OptionParser.new do |opts|
   opts.banner = "Usage: AWScloudwatchLimitsTA.rb [options]"
 
   opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
-    options[:dryrun] = d
+    $options[:dryrun] = d
   end
 
   opts.on('-v', '--verbose', 'Run verbosely') do |v|
-    options[:verbose] = v
+    $options[:verbose] = v
   end
 
   opts.on('-h', '--help', '') do
@@ -35,6 +35,8 @@ optparse = OptionParser.new do |opts|
 end
 
 optparse.parse!
+
+require 'Sendit'
 
 startTime = Time.now.utc.to_i.to_s
 
@@ -66,15 +68,12 @@ results.result.flagged_resources.each do |result|
   current = result['metadata'][4]
   metricpath = "AWSLimitsTA.#{region}.#{service}.#{check}"
 
-  Sendit "#{metricpath}.max", max, startTime unless options[:dryrun]
-  puts "#{metricpath}.max #{max} #{startTime}" if options[:verbose]
+  Sendit "#{metricpath}.max", max, startTime
 
   # the RI limits only have a max, current value appears to always be nil
   if current
-    Sendit "#{metricpath}.value", current, startTime unless options[:dryrun]
-    puts "#{metricpath}.value #{current} #{startTime}" if options[:verbose]
-    Sendit "#{metricpath}.used_percent", (current.to_i * 100 / max.to_i), startTime unless options[:dryrun]
-    puts "#{metricpath}.used_percent #{(current.to_i * 100 / max.to_i)} #{startTime}" if options[:verbose]
+    Sendit "#{metricpath}.value", current, startTime
+    Sendit "#{metricpath}.used_percent", (current.to_i * 100 / max.to_i), startTime
   end
 end
 

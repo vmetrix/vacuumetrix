@@ -12,6 +12,7 @@ unless $SomeTimer
   end
 end
 
+# SendInfluxDB('CPUUtilization', 'instance_id=i-abcd1234,region=us-west-2,name=influxdb9_test,CostCenter=12345,Owner=me@example_com,Service=metrics', 5, #DATE)
 def SendInfluxDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
   retries = $influxdbretries
   my_tags_string = metrictags.map{|k, v| "#{k}=#{v.to_s}"}.join(',')
@@ -41,5 +42,3 @@ def SendInfluxDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
     puts message
   end
 end
-
-# SendInfluxDB('CPUUtilization', 'instance_id=i-abcd1234,region=us-west-2,name=influxdb9_test,CostCenter=12345,Owner=me@example_com,Service=metrics', 5, #DATE)

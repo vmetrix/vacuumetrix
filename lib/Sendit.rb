@@ -32,7 +32,8 @@ $send_to = Hash.new
 # end
 
 def Sendit(metricpath, metricvalue, metrictimestamp, metrictags = nil)
-  if $send_to[:influxdb]
+  # Adding in a metrictags guard until all AWS scripts updated
+  if $send_to[:influxdb] && metrictags
     SendInfluxDB metricpath, metricvalue, metrictimestamp, metrictags
   end
 

@@ -13,7 +13,7 @@ def SendOpenTSDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
   end
           ### we need to turn each kv pair in metrictags[:foo] into foo=bar joined by ' '
   message = "put " + metricpath + " " + metrictimestamp.to_s + " " + metricvalue.to_s + " " + metrictags.each do |tag|
-  unless options[:dryrun]
+  unless $options[:dryrun]
     begin
       sock = TCPSocket.new($opentsdbserver, $opentsdbport)
       sock.puts(message)
@@ -22,7 +22,7 @@ def SendOpenTSDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
       puts "can't send"
     end
   end
-  if options[:verbose]
+  if $options[:verbose]
     puts message
   end
 end

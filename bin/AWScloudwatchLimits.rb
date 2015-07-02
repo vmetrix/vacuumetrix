@@ -7,14 +7,14 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'json'
 require 'aws-sdk'
 require 'optparse'
 
-options = {
+$options = {
     :start_offset => 180,
     :end_offset => 120
 }
@@ -23,11 +23,11 @@ optparse = OptionParser.new do |opts|
   opts.banner = "Usage: AWScloudwatchLimits.rb [options]"
 
   opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
-    options[:dryrun] = d
+    $options[:dryrun] = d
   end
 
   opts.on('-v', '--verbose', 'Run verbosely') do |v|
-    options[:verbose] = v
+    $options[:verbose] = v
   end
 
   opts.on('-h', '--help', '') do
@@ -37,6 +37,8 @@ optparse = OptionParser.new do |opts|
 end
 
 optparse.parse!
+
+require 'Sendit'
 
 startTime = Time.now.utc.to_i.to_s
 
@@ -71,16 +73,14 @@ account_limits.each do |limit, value|
   metricpath = "AWSlimits." + limit + ".max"
   metricvalue = value
   metrictimestamp = startTime
-  Sendit metricpath, metricvalue, metrictimestamp unless options[:dryrun]
-  puts "DEBUG: #{metricpath} #{metricvalue} #{metrictimestamp}" if options[:verbose]
+  Sendit metricpath, metricvalue, metrictimestamp
 end
 
 account_values.each do |limit, value|
   metricpath = "AWSlimits." + limit + ".value"
   metricvalue = value
   metrictimestamp = startTime
-  Sendit metricpath, metricvalue, metrictimestamp unless options[:dryrun]
-  puts "DEBUG: #{metricpath} #{metricvalue} #{metrictimestamp}" if options[:verbose]
+  Sendit metricpath, metricvalue, metrictimestamp
 end
 
 exit 0

@@ -162,6 +162,7 @@ def fetch_and_send(i)
         my_tags[:instance_id] = i.id
         my_tags[:flavor_id] = i.flavor_id
         my_tags[:availability_zone] = i.availability_zone
+        my_tags[:region] = i.availability_zone.chop
         begin
           metricvalue     = response[metric[:stat]]
           metrictimestamp = response["Timestamp"].to_i.to_s

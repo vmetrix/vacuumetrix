@@ -10,7 +10,7 @@ require 'fog'
 require 'json'
 require 'optparse'
 
-options = {
+$options = {
     :start_offset => 21660,
     :end_offset => 60
 }
@@ -18,12 +18,20 @@ options = {
 optparse = OptionParser.new do|opts|
   opts.banner = "Usage: AWScloudwatchBilling.rb [options]"
 
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
   opts.on( '-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 21660') do |s|
-    options[:start_offset] = s
+    $options[:start_offset] = s
   end
 
   opts.on( '-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 60') do |e|
-    options[:end_offset] = e
+    $options[:end_offset] = e
   end
 
   # This displays the help screen, all programs are
@@ -36,8 +44,10 @@ end
 
 optparse.parse!
 
-startTime = Time.now.utc - options[:start_offset].to_i
-endTime  = Time.now.utc - options[:end_offset].to_i
+require 'Sendit'
+
+startTime = Time.now.utc - $options[:start_offset].to_i
+endTime  = Time.now.utc - $options[:end_offset].to_i
 
 
 cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)

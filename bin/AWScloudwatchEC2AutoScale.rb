@@ -4,7 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'optparse'
@@ -23,7 +23,7 @@ end
 # You probably don't want to go over 8 threads, unless AWS raises the rate limit on GetLogEvents > 10/sec
 # http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/cloudwatch_limits.html
 # Adjust for your environment
-options = {
+$options = {
     :start_offset => 900,
     :end_offset   => 0,
     :threads      => 1
@@ -32,16 +32,24 @@ options = {
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: AWScloudwatchEC2AutoScale.rb [options]"
 
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
   opts.on('-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 900 (15m)') do |s|
-    options[:start_offset] = s
+    $options[:start_offset] = s
   end
 
   opts.on('-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the end of the metrics period. Default 0 (now)') do |e|
-    options[:end_offset] = e
+    $options[:end_offset] = e
   end
 
   opts.on('-t', '--threads [NUMBER_OF_THREADS]', 'Number of threads to use for querying CloudWatch. Default 1') do |t|
-    options[:threads] = t
+    $options[:threads] = t
   end
 
   opts.on('-h', '--help', '') do
@@ -52,8 +60,10 @@ end
 
 optparse.parse!
 
-$startTime = Time.now.utc - options[:start_offset].to_i
-$endTime   = Time.now.utc - options[:end_offset].to_i
+require 'Sendit'
+
+$startTime = Time.now.utc - $options[:start_offset].to_i
+$endTime   = Time.now.utc - $options[:end_offset].to_i
 
 $autoscaling  = Fog::AWS::AutoScaling.new(
               :region => $awsregion,
@@ -149,7 +159,7 @@ end
 
 work_q = Queue.new
 autoscalinggroup_list.each{|asg| work_q.push asg}
-workers = (0...options[:threads].to_i).map do
+workers = (0...$options[:threads].to_i).map do
   Thread.new do
     begin
       while asg = work_q.pop(true)

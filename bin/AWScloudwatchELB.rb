@@ -8,7 +8,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'json'
@@ -22,7 +22,7 @@ rescue LoadError
   SomeTimer = Timeout
 end
 
-options = {
+$options = {
     :start_offset => 180,
     :end_offset => 120,
     :threads => 1
@@ -31,24 +31,30 @@ options = {
 optparse = OptionParser.new do|opts|
   opts.banner = "Usage: AWScloudwatchELB.rb [options] [--all|lb_names]"
 
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
   opts.on( '-a', '--all', 'Collect metrics for all ELBs') do
-    options[:all] = true
+    $options[:all] = true
   end
 
   opts.on( '-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 180') do |s|
-    options[:start_offset] = s
+    $options[:start_offset] = s
   end
 
   opts.on( '-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 120') do |e|
-    options[:end_offset] = e
+    $options[:end_offset] = e
   end
 
   opts.on('-t', '--threads [NUMBER_OF_THREADS]', 'Number of threads to use for querying CloudWatch. Default 1') do |t|
-    options[:threads] = t
+    $options[:threads] = t
   end
 
-  # This displays the help screen, all programs are
-  # assumed to have this option.
   opts.on( '-h', '--help', '' ) do
     puts opts
     exit
@@ -58,11 +64,13 @@ end
 
 optparse.parse!
 
+require 'Sendit'
+
 elb = Fog::AWS::ELB.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 $cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 
 lbs = []
-if options[:all]
+if $options[:all]
   my_lb_list = elb.load_balancers.all
   my_lb_list.each do |my_lb|
     lbs << my_lb.id
@@ -76,8 +84,8 @@ else
   end
 end
 
-$startTime = Time.now.utc - options[:start_offset].to_i
-$endTime  = Time.now.utc - options[:end_offset].to_i
+$startTime = Time.now.utc - $options[:start_offset].to_i
+$endTime  = Time.now.utc - $options[:end_offset].to_i
 
 $metricNames = {"RequestCount" => ["Sum"],
                "HealthyHostCount" => ["Minimum"],
@@ -140,7 +148,7 @@ end
 
 work_q = Queue.new
 lbs.each{|lb| work_q.push lb}
-workers = (0...options[:threads].to_i).map do
+workers = (0...$options[:threads].to_i).map do
   Thread.new do
     begin
       while lb = work_q.pop(true)

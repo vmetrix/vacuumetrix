@@ -7,13 +7,13 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'optparse'
 
 #AWS cloudwatch stats for EBS seem to be at least 15 minutes behind and have a granualarity of 5 minutes
-options = {
+$options = {
     :start_offset => 3600,
     :end_offset   => 3300
 }
@@ -21,12 +21,20 @@ options = {
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: AWScloudwatchEBS.rb [options] [VolumeIds]"
 
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
   opts.on('-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 1200') do |s|
-    options[:start_offset] = s
+    $options[:start_offset] = s
   end
 
   opts.on('-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 600') do |e|
-    options[:end_offset] = e
+    $options[:end_offset] = e
   end
 
   opts.on('-h', '--help', '') do
@@ -37,9 +45,10 @@ end
 
 optparse.parse!
 
+require 'Sendit'
 
-startTime = Time.now.utc - options[:start_offset].to_i
-endTime   = Time.now.utc - options[:end_offset].to_i
+startTime = Time.now.utc - $options[:start_offset].to_i
+endTime   = Time.now.utc - $options[:end_offset].to_i
 
 volumeIds = []
 if ARGV.length > 0
