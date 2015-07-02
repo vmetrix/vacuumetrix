@@ -9,9 +9,31 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
+
+optparse = OptionParser.new do|opts|
+  opts.banner = "Usage: AWScountEC2.rb [options]"
+
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
+  opts.on( '-h', '--help', '' ) do
+    puts opts
+    exit
+  end
+
+end
+
+optparse.parse!
+
+require 'Sendit'
 
 compute = Fog::Compute.new(	:provider => :aws,
 							:region => $awsregion,
