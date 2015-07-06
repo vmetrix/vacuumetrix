@@ -159,6 +159,7 @@ def fetch_and_send(i)
         metricpath = "AWScloudwatch.EC2." + i.id + "." + metric[:name]
         my_tags = i.tags
         my_tags.delete_if {|_, v| v.to_s.empty?}
+        my_tags.each {|_, v| v.strip}
         my_tags[:instance_id] = i.id
         my_tags[:flavor_id] = i.flavor_id
         my_tags[:availability_zone] = i.availability_zone
