@@ -22,7 +22,7 @@ def SendInfluxDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
     begin
       $SomeTimer.timeout($influxdbtimeout) do
         http = Net::HTTP.new($influxdbserver, $influxdbport)
-        url = "/write?db=#{$influxdbdatabase},&precision=s"
+        url = "/write?db=#{$influxdbdatabase}&precision=s"
         response = http.request(Net::HTTP::Post.new(url), message)
 
         case response
