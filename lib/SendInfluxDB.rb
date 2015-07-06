@@ -21,14 +21,16 @@ def SendInfluxDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
   unless $options[:dryrun]
     begin
       $SomeTimer.timeout($influxdbtimeout) do
-	uri = URI("http://#{$influxdbserver}:#{$influxdbport}/write?db=#{$influxdbdatabase}&precision=s")
-	req = Net::HTTP::Post.new(uri)
-	req.body = message
-	req.content_type = 'application/x-www-form-urlencoded'
+        http = Net::HTTP.new($influxdbserver, $influxdbport)
+        url = "/write?db=#{$influxdbdatabase},&precision=s"
+        response = http.request(Net::HTTP::Post.new(url), message)
 
-	response = Net::HTTP.start(uri.hostname, uri.port) do |http|
-	  http.request(req)
-	end
+        case response
+        when Net::HTTPSuccess, Net::HTTPRedirection
+          # OK
+        else
+          puts "error: #{response.value}" if $options[:verbose]
+        end
       end
     rescue => e
       puts "can't send " + message
