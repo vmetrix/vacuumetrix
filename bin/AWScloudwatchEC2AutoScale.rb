@@ -111,12 +111,37 @@ $metrics = [
         :name => "NetworkOut",
         :unit => "Bytes",
         :stat => "Average"
+    },
+    {
+        :name => "CPUCreditBalance",
+        :unit => "Count",
+        :stat => "Average"
+    },
+    {
+        :name => "CPUCreditUsage",
+        :unit => "Count",
+        :stat => "Average"
     }
 ]
 
 def fetch_and_send(asg)
   $my_name = asg.id
   retries = $cloudwatchretries
+
+  # Fetch the count of systems in the ASG because that's not a cloudwatch metric
+  asg_instance_counts = {}
+  asg_instance_counts['instances_in_service'] = asg.instances_in_service.length
+  asg_instance_counts['instances_out_service'] = asg.instances_out_service.length
+  asg_instance_counts.each do |k, v|
+    metricpath = "AWScloudwatch.AutoScaling." + $my_name + "." + k
+    begin
+      Sendit metricpath, v, $endTime.to_i.to_s
+    rescue
+      # ignored
+    end
+  end
+  return
+
   responses = ''
   $metrics.each do |metric|
     begin
