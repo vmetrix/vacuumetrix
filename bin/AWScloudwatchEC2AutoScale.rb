@@ -125,22 +125,30 @@ $metrics = [
 ]
 
 def fetch_and_send(asg)
-  $my_name = asg.id
+  my_name = asg.id
   retries = $cloudwatchretries
+  my_tags = {}
+  asg.tags.each do |tag|
+    my_tags[tag['Key']] = tag['Value']
+  end
+  my_tags.delete_if {|_, v| v.to_s.empty?}
+  my_tags.each {|_, v| v.strip}
+  my_tags['asg_id'] = my_name
 
   # Fetch the count of systems in the ASG because that's not a cloudwatch metric
   asg_instance_counts = {}
   asg_instance_counts['instances_in_service'] = asg.instances_in_service.length
   asg_instance_counts['instances_out_service'] = asg.instances_out_service.length
+  asg_instance_counts['max_size'] = asg.max_size
+  asg_instance_counts['min_size'] = asg.min_size
   asg_instance_counts.each do |k, v|
-    metricpath = "AWScloudwatch.AutoScaling." + $my_name + "." + k
+    metricpath = "AWScloudwatch.AutoScaling." + my_name + "." + k
     begin
-      Sendit metricpath, v, $endTime.to_i.to_s
+      Sendit metricpath, v, $endTime.to_i.to_s, my_tags
     rescue
       # ignored
     end
   end
-  return
 
   responses = ''
   $metrics.each do |metric|
@@ -156,12 +164,12 @@ def fetch_and_send(asg)
                          'Namespace'  => 'AWS/EC2',
                          'Dimensions' => [{
                                               'Name'  => 'AutoScalingGroupName',
-                                              'Value' => $my_name
+                                              'Value' => my_name
                                           }]
                      }).body['GetMetricStatisticsResult']['Datapoints']
       end
     rescue => e
-      puts "error fetching metric :: " + metric[:name] + " :: " + $my_name
+      puts "error fetching metric :: " + metric[:name] + " :: " + my_name
       puts "\terror: #{e}"
       retries -= 1
       puts "\tretries left: #{retries}"
@@ -169,11 +177,11 @@ def fetch_and_send(asg)
     end
 
     responses.each do |response|
-      metricpath = "AWScloudwatch.AutoScaling." + $my_name + "." + metric[:name]
+      metricpath = "AWScloudwatch.AutoScaling." + my_name + "." + metric[:name]
       begin
         metricvalue     = response[metric[:stat]]
         metrictimestamp = response["Timestamp"].to_i.to_s
-        Sendit metricpath, metricvalue, metrictimestamp
+        Sendit metricpath, metricvalue, metrictimestamp, my_tags
       rescue
         # ignored
       end
