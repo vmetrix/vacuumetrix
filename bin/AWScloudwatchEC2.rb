@@ -129,6 +129,14 @@ def fetch_and_send(i)
   if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
     retries = $cloudwatchretries
     responses = ''
+    my_tags = i.tags
+    my_tags.delete_if {|_, v| v.to_s.empty?}
+    my_tags.each {|_, v| v.strip if v.is_a?(String)}
+    my_tags[:instance_id] = i.id
+    my_tags[:flavor_id] = i.flavor_id
+    my_tags[:availability_zone] = i.availability_zone
+    my_tags[:region] = i.availability_zone.chop
+
     $metrics.each do |metric|
       begin
         $SomeTimer.timeout($cloudwatchtimeout) do
@@ -157,14 +165,6 @@ def fetch_and_send(i)
       responses.each do |response|
         # metricpath = "AWScloudwatch.EC2." + i.tags["Name"] + "." + metric[:name]
         metricpath = "AWScloudwatch.EC2." + i.id + "." + metric[:name]
-        my_tags = i.tags
-        my_tags.delete_if {|_, v| v.to_s.empty?}
-        my_tags.each {|_, v| v.strip}
-        my_tags[:instance_id] = i.id
-        my_tags[:flavor_id] = i.flavor_id
-        my_tags[:availability_zone] = i.availability_zone
-        my_tags[:region] = i.availability_zone.chop
-        my_tags[:count] = 1
         begin
           metricvalue     = response[metric[:stat]]
           metrictimestamp = response["Timestamp"].to_i.to_s
@@ -175,6 +175,10 @@ def fetch_and_send(i)
       end
 
     end
+
+    # And send a counter
+    metricpath = "AWScloudwatch.EC2." + i.id + ".count"
+    Sendit metricpath, 1, $endTime.to_i.to_s, my_tags
 
   end
 end
