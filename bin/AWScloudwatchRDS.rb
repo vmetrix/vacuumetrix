@@ -6,6 +6,8 @@
 ### if no argument is specified get metrics for all databases
 ### if a database name is specified as an argument then only show that database
 
+### TODO: implement retry logic for collecting metrics
+
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
@@ -65,6 +67,14 @@ end
 startTime = Time.now.utc - $options[:start_offset].to_i
 endTime = Time.now.utc - $options[:end_offset].to_i
 
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScloudwatchRDS"
+my_script_tags[:account] = "nonprod"
+
 metricNames = {"CPUUtilization" => "Percent",
                "DatabaseConnections" => "Count",
                "FreeStorageSpace" => "Bytes",
@@ -105,9 +115,20 @@ dbNames.each do |db|
         metricvalue = response["Average"]
         metrictimestamp = response["Timestamp"].to_i.to_s
         Sendit metricpath, metricvalue, metrictimestamp
+        $metricsSent += 1
       rescue
         # ignored
       end
     end
   end
+end
+
+$runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+    Sendit "vacuumetrics.#{my_script_tags[:script]}.send_retries_" + k, v, $runStart.to_i.to_s, my_script_tags
 end

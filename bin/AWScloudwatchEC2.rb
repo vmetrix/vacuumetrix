@@ -189,6 +189,7 @@ def fetch_and_send(i)
     # And send a counter, mostly useful for tagged backends
     metricpath = "AWScloudwatch.EC2." + i.id + ".count"
     Sendit metricpath, 1, $endTime.to_i.to_s, my_tags
+    $metricsSent += 1
 
   end
 end
