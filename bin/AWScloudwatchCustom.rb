@@ -181,6 +181,7 @@ def fetch_and_send(metric)
       puts "error fetching metric :: " + metric['MetricName'] + " :: " 
       puts "\terror: #{e}"
       retries -= 1
+      $collectionRetries += 1
       puts "\tretries left: #{retries}"
       retry if retries > 0
     end

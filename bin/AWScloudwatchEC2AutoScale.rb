@@ -181,6 +181,7 @@ def fetch_and_send(asg)
       puts "error fetching metric :: " + metric[:name] + " :: " + my_name
       puts "\terror: #{e}"
       retries -= 1
+      $collectionRetries += 1
       puts "\tretries left: #{retries}"
       retry if retries > 0
     end
