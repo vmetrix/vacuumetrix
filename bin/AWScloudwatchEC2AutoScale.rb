@@ -65,6 +65,14 @@ require 'Sendit'
 $startTime = Time.now.utc - $options[:start_offset].to_i
 $endTime   = Time.now.utc - $options[:end_offset].to_i
 
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScloudwatchEC2AutoScale"
+my_script_tags[:account] = "nonprod"
+
 $autoscaling  = Fog::AWS::AutoScaling.new(
               :region => $awsregion,
               :aws_access_key_id => $awsaccesskey,
@@ -145,6 +153,7 @@ def fetch_and_send(asg)
     metricpath = "AWScloudwatch.AutoScaling." + my_name + "." + k
     begin
       Sendit metricpath, v, $endTime.to_i.to_s, my_tags
+      $metricsSent += 1
     rescue
       # ignored
     end
@@ -182,6 +191,7 @@ def fetch_and_send(asg)
         metricvalue     = response[metric[:stat]]
         metrictimestamp = response["Timestamp"].to_i.to_s
         Sendit metricpath, metricvalue, metrictimestamp, my_tags
+        $metricsSent += 1
       rescue
         # ignored
       end
@@ -203,3 +213,13 @@ workers = (0...$options[:threads].to_i).map do
   end
 end; "ok"
 workers.map(&:join); "ok"
+
+$runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+  Sendit "vacuumetrics.#{my_script_tags[:script]}.send_retries_" + k, v, $runStart.to_i.to_s, my_script_tags
+end

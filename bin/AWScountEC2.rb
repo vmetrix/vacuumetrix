@@ -12,6 +12,9 @@ require 'config'
 # require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
+require 'optparse'
+
+$options = {}
 
 optparse = OptionParser.new do|opts|
   opts.banner = "Usage: AWScountEC2.rb [options]"
@@ -34,6 +37,14 @@ end
 optparse.parse!
 
 require 'Sendit'
+
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScountEC2"
+my_script_tags[:account] = "nonprod"
 
 compute = Fog::Compute.new(	:provider => :aws,
 							:region => $awsregion,
@@ -58,6 +69,7 @@ instance_report.each do |itype, count|
   metricvalue = count
   metrictimestamp=Time.now.utc.to_i.to_s
   Sendit metricpath, metricvalue, metrictimestamp
+  $metricsSent += 1
 end
 #
 
@@ -92,5 +104,15 @@ tag_report.each do |tag, count|
   metricvalue = count
   metrictimestamp=Time.now.utc.to_i.to_s
   Sendit metricpath, metricvalue, metrictimestamp
+  $metricsSent += 1
 end
-#
+
+$runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+  Sendit "vacuumetrics.#{my_script_tags[:script]}.send_retries_" + k, v, $runStart.to_i.to_s, my_script_tags
+end

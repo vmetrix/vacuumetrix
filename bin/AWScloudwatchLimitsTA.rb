@@ -40,6 +40,14 @@ require 'Sendit'
 
 startTime = Time.now.utc.to_i.to_s
 
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScloudwatchLimitsTA"
+my_script_tags[:account] = "nonprod"
+
 creds = Aws::Credentials.new($awsaccesskey, $awssecretkey)
 # Note that Support only has one region http://docs.aws.amazon.com/general/latest/gr/rande.html#awssupport_region
 support = Aws::Support::Client.new(region:'us-east-1', credentials:creds)
@@ -69,12 +77,22 @@ results.result.flagged_resources.each do |result|
   metricpath = "AWSLimitsTA.#{region}.#{service}.#{check}"
 
   Sendit "#{metricpath}.max", max, startTime
+  $metricsSent += 1
 
   # the RI limits only have a max, current value appears to always be nil
   if current
     Sendit "#{metricpath}.value", current, startTime
     Sendit "#{metricpath}.used_percent", (current.to_i * 100 / max.to_i), startTime
+    $metricsSent += 2
   end
 end
 
-exit 0
+$runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+  Sendit "vacuumetrics.#{my_script_tags[:script]}.send_retries_" + k, v, $runStart.to_i.to_s, my_script_tags
+end

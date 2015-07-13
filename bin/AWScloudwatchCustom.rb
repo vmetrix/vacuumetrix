@@ -137,6 +137,14 @@ end
 $startTime = Time.now.utc - $options[:start_offset].to_i
 $endTime  = Time.now.utc - $options[:end_offset].to_i
 
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScloudwatchCustom"
+my_script_tags[:account] = "nonprod"
+
 if File.exists?($options[:namespaces_file])
   cache_age = Time.now - File.mtime($options[:namespaces_file])
   if cache_age > $options[:namespaces_age].to_i
@@ -190,6 +198,7 @@ def fetch_and_send(metric)
       end
 
       Sendit metricpath, metricvalue, metrictimestamp
+      $metricsSent += 1
     end
 end
 
@@ -207,4 +216,12 @@ workers = (0...$options[:threads].to_i).map do
 end; "ok"
 workers.map(&:join); "ok"
 
-exit 0
+runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+  Sendit "vacuumetrics.#{my_script_tags[:script]}.send_retries_" + k, v, $runStart.to_i.to_s, my_script_tags
+end

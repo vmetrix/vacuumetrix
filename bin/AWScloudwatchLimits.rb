@@ -41,6 +41,13 @@ optparse.parse!
 require 'Sendit'
 
 startTime = Time.now.utc.to_i.to_s
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScloudwatchLimits"
+my_script_tags[:account] = "nonprod"
 
 creds = Aws::Credentials.new($awsaccesskey, $awssecretkey)
 autoscaling_sdk = Aws::AutoScaling::Client.new(region:$awsregion, credentials:creds)
@@ -74,6 +81,7 @@ account_limits.each do |limit, value|
   metricvalue = value
   metrictimestamp = startTime
   Sendit metricpath, metricvalue, metrictimestamp
+  $metricsSent += 1
 end
 
 account_values.each do |limit, value|
@@ -81,6 +89,15 @@ account_values.each do |limit, value|
   metricvalue = value
   metrictimestamp = startTime
   Sendit metricpath, metricvalue, metrictimestamp
+  $metricsSent += 1
 end
 
-exit 0
+$runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+  Sendit "vacuumetrics.#{my_script_tags[:script]}.send_retries_" + k, v, $runStart.to_i.to_s, my_script_tags
+end
