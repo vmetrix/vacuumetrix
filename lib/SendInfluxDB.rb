@@ -36,6 +36,7 @@ def SendInfluxDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
       puts "can't send " + message
       puts "\terror: #{e}"
       retries -= 1
+      $sendRetries[:influxdb] += 1
       puts "\tretries left: #{retries}"
       retry if retries > 0
     end

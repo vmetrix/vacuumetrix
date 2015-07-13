@@ -67,6 +67,13 @@ require 'Sendit'
 
 $startTime = Time.now.utc - $options[:start_offset].to_i
 $endTime   = Time.now.utc - $options[:end_offset].to_i
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScloudwatchEC2"
+my_script_tags[:account] = "nonprod"
 
 compute     = Fog::Compute.new( :provider => :aws,
               :region => $awsregion,
@@ -126,7 +133,8 @@ def fetch_and_send(i)
   # Only fetch metrics if instance
   #  has a 'Name' tag and it isn't the instance id.
 
-  if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
+  # if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
+  if i.ready?
     retries = $cloudwatchretries
     responses = ''
     my_tags = i.tags
@@ -158,6 +166,7 @@ def fetch_and_send(i)
         puts "error fetching metric :: " + metric[:name] + " :: " + i.id
         puts "\terror: #{e}"
         retries -= 1
+        $collectionRetries += 1
         puts "\tretries left: #{retries}"
         retry if retries > 0
       end
@@ -169,6 +178,7 @@ def fetch_and_send(i)
           metricvalue     = response[metric[:stat]]
           metrictimestamp = response["Timestamp"].to_i.to_s
           Sendit metricpath, metricvalue, metrictimestamp, my_tags
+          $metricsSent += 1
         rescue
           # ignored
         end
@@ -176,7 +186,7 @@ def fetch_and_send(i)
 
     end
 
-    # And send a counter
+    # And send a counter, mostly useful for tagged backends
     metricpath = "AWScloudwatch.EC2." + i.id + ".count"
     Sendit metricpath, 1, $endTime.to_i.to_s, my_tags
 
@@ -197,3 +207,12 @@ workers = (0...$options[:threads].to_i).map do
 end; "ok"
 workers.map(&:join); "ok"
 
+$runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart 
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+  Sendit "vacuumetrics.#{my_script_tags[:script]}.send_retries_" + k, v, $runStart.to_i.to_s, my_script_tags
+end
