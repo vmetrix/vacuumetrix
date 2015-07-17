@@ -140,6 +140,7 @@ def fetch_and_send(i)
     my_tags = i.tags
     my_tags.delete_if {|_, v| v.to_s.empty?}
     my_tags.each {|_, v| v.strip if v.is_a?(String)}
+    my_tags.each {|_, v| v.tr(' ', '_') if v.is_a?(String)}
     my_tags[:instance_id] = i.id
     my_tags[:flavor_id] = i.flavor_id
     my_tags[:availability_zone] = i.availability_zone
