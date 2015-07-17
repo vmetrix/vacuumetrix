@@ -140,7 +140,7 @@ def fetch_and_send(asg)
     my_tags[tag['Key']] = tag['Value']
   end
   my_tags.delete_if {|_, v| v.to_s.empty?}
-  my_tags.each {|_, v| v.strip}
+  my_tags.each {|_, v| v.strip if v.is_a?(String)}
   my_tags.each {|_, v| v.tr(' ', '_') if v.is_a?(String)}
   my_tags['asg_id'] = my_name
 
