@@ -15,7 +15,7 @@ end
 # SendInfluxDB('CPUUtilization', 'instance_id=i-abcd1234,region=us-west-2,name=influxdb9_test,CostCenter=12345,Owner=me@example_com,Service=metrics', 5, #DATE)
 def SendInfluxDB(metricpath, metricvalue, metrictimestamp, metrictags = nil)
   retries = $influxdbretries
-  my_tags_string = metrictags.map{|k, v| "#{k}=#{v.to_s}"}.join(',')
+  my_tags_string = metrictags.map{|k, v| "#{k.to_s.tr(' ', '_')}=\"#{v.to_s.tr(' ', '_')}\""}.join(',')
   message = metricpath.split('.').last + ',' + my_tags_string + ' value=' + metricvalue.to_s + ' ' + metrictimestamp
 
   unless $options[:dryrun]
