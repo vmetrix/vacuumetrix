@@ -28,7 +28,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 ## Install dependancies
 ### Debian/Ubuntu
 
-    apt-get install ruby build-essential libcurl3 libcurl3-gnutls libcurl4-openssl-dev
+    apt-get install ruby ruby-dev build-essential libcurl3 libcurl3-gnutls libcurl4-openssl-dev
 
 ### Amazon Linux
 
