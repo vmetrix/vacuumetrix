@@ -130,69 +130,74 @@ $metrics = [
 
 def fetch_and_send(i)
 
-  # Only fetch metrics if instance
-  #  has a 'Name' tag and it isn't the instance id.
+  case $aws_instance_name_tag_required
+  when true
+    # Only fetch metrics if instance
+    # has a 'Name' tag and it isn't the instance id.
+    return unless i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
 
-  # if i.tags.has_key?('Name') && !i.tags['Name'].start_with?('i-')
-  if i.ready?
-    retries = $cloudwatchretries
-    responses = ''
-    my_tags = i.tags
-    my_tags.delete_if {|_, v| v.to_s.empty?}
-    my_tags.each {|_, v| v.strip if v.is_a?(String)}
-    my_tags.each {|_, v| v.tr(' ', '_') if v.is_a?(String)}
-    my_tags[:instance_id] = i.id
-    my_tags[:flavor_id] = i.flavor_id
-    my_tags[:availability_zone] = i.availability_zone
-    my_tags[:region] = i.availability_zone.chop
-
-    $metrics.each do |metric|
-      begin
-        $SomeTimer.timeout($cloudwatchtimeout) do
-          responses = $cloudwatch.get_metric_statistics({
-                           'Statistics' => metric[:stat],
-                           'StartTime'  => $startTime.iso8601,
-                           'EndTime'    => $endTime.iso8601,
-                           'Period'     => 60,
-                           'Unit'       => metric[:unit],
-                           'MetricName' => metric[:name],
-                           'Namespace'  => 'AWS/EC2',
-                           'Dimensions' => [{
-                                                'Name'  => 'InstanceId',
-                                                'Value' => i.id
-                                            }]
-                       }).body['GetMetricStatisticsResult']['Datapoints']
-        end
-      rescue => e
-        puts "error fetching metric :: " + metric[:name] + " :: " + i.id
-        puts "\terror: #{e}"
-        retries -= 1
-        $collectionRetries += 1
-        puts "\tretries left: #{retries}"
-        retry if retries > 0
-      end
-
-      responses.each do |response|
-        # metricpath = "AWScloudwatch.EC2." + i.tags["Name"] + "." + metric[:name]
-        metricpath = "AWScloudwatch.EC2." + i.id + "." + metric[:name]
-        begin
-          metricvalue     = response[metric[:stat]]
-          metrictimestamp = response["Timestamp"].to_i.to_s
-          Sendit metricpath, metricvalue, metrictimestamp, my_tags
-          $metricsSent += 1
-        rescue
-          # ignored
-        end
-      end
-
-    end
-
-    # And send a counter, mostly useful for tagged backends
-    metricpath = "AWScloudwatch.EC2." + i.id + ".count"
-    Sendit metricpath, 1, $endTime.to_i.to_s, my_tags
-    $metricsSent += 1
+  when false
+    # Check and see if the instance exists and is running
+    return unless i.ready?
 
   end
+
+  retries = $cloudwatchretries
+  responses = ''
+  my_tags = i.tags
+  my_tags.delete_if {|_, v| v.to_s.empty?}
+  my_tags.each {|_, v| v.strip if v.is_a?(String)}
+  my_tags.each {|_, v| v.tr(' ', '_') if v.is_a?(String)}
+  my_tags[:instance_id] = i.id
+  my_tags[:flavor_id] = i.flavor_id
+  my_tags[:availability_zone] = i.availability_zone
+  my_tags[:region] = i.availability_zone.chop
+
+  $metrics.each do |metric|
+    begin
+      $SomeTimer.timeout($cloudwatchtimeout) do
+        responses = $cloudwatch.get_metric_statistics({
+                         'Statistics' => metric[:stat],
+                         'StartTime'  => $startTime.iso8601,
+                         'EndTime'    => $endTime.iso8601,
+                         'Period'     => 60,
+                         'Unit'       => metric[:unit],
+                         'MetricName' => metric[:name],
+                         'Namespace'  => 'AWS/EC2',
+                         'Dimensions' => [{
+                                              'Name'  => 'InstanceId',
+                                              'Value' => i.id
+                                          }]
+                     }).body['GetMetricStatisticsResult']['Datapoints']
+      end
+    rescue => e
+      puts "error fetching metric :: " + metric[:name] + " :: " + i.id
+      puts "\terror: #{e}"
+      retries -= 1
+      $collectionRetries += 1
+      puts "\tretries left: #{retries}"
+      retry if retries > 0
+    end
+
+    responses.each do |response|
+      metricpath = "AWScloudwatch.EC2." + ($aws_instance_name_tag_required ? i.tags["Name"] : i.id) + "." + metric[:name]
+      begin
+        metricvalue     = response[metric[:stat]]
+        metrictimestamp = response["Timestamp"].to_i.to_s
+        Sendit metricpath, metricvalue, metrictimestamp, my_tags
+        $metricsSent += 1
+      rescue
+        # ignored
+      end
+    end
+
+  end
+
+  # And send a counter, mostly useful for tagged backends
+  metricpath = "AWScloudwatch.EC2." + ($aws_instance_name_tag_required ? i.tags["Name"] : i.id) + ".count"
+  Sendit metricpath, 1, $endTime.to_i.to_s, my_tags
+  $metricsSent += 1
+
 end
 
 work_q = Queue.new

@@ -30,6 +30,13 @@ $aws_tags = []
 # $aws_tags_formatter = '.gsub(" ","_")'
 $aws_tags_formatter = ''
 
+# AWS Instance Filtering
+# AWScloudwatchEC2.rb filters for hosts with tag 'Name' with a value
+# other than 'i-*', if you want to collect all instances, set this to
+# false. Default to true to keep legacy behavior. This will also
+# control if the instance ID or Name tag is used in the metric path.
+$aws_instance_name_tag_required = true
+
 # AWS CloudWatch
 $cloudwatchretries = 3
 $cloudwatchtimeout = 3
