@@ -4,13 +4,13 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'json'
 require 'optparse'
 
-options = {
+$options = {
     :start_offset => 1200,
     :end_offset => 600
 }
@@ -18,16 +18,22 @@ options = {
 optparse = OptionParser.new do|opts|
   opts.banner = "Usage: AWScloudwatchDynamo.rb [options] table_names"
 
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
   opts.on( '-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 1200') do |s|
-    options[:start_offset] = s
+    $options[:start_offset] = s
   end
 
   opts.on( '-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 600') do |e|
-    options[:end_offset] = e
+    $options[:end_offset] = e
   end
 
-  # This displays the help screen, all programs are
-  # assumed to have this option.
   opts.on( '-h', '--help', '' ) do
     puts opts
     exit
@@ -37,6 +43,8 @@ optparse = OptionParser.new do|opts|
 end
 
 optparse.parse!
+
+require 'Sendit'
 
 if ARGV.length == 0
   puts "Must specifiy at least one table name to pull metrics for"
@@ -66,8 +74,8 @@ else
   end
 end
 
-startTime = Time.now.utc - options[:start_offset].to_i
-endTime  = Time.now.utc - options[:end_offset].to_i
+startTime = Time.now.utc - $options[:start_offset].to_i
+endTime  = Time.now.utc - $options[:end_offset].to_i
 
 operations = %w(PutItem DeleteItem UpdateItem GetItem BatchGetItem Scan Query)
 operationLevelMetrics = [
