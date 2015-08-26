@@ -18,6 +18,7 @@ This is a good thing to do because whilst all the external SAAS services we use 
 * Graphite
 * Ganglia
 * OpenTSDB
+* InfluxDB
 
 ------------
 #Installation
