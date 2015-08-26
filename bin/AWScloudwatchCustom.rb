@@ -9,7 +9,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-require 'Sendit'
+# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'json'
@@ -23,7 +23,7 @@ rescue LoadError
   SomeTimer = Timeout
 end
 
-options = {
+$options = {
     :namespaces_age => 7200,
     :namespaces_file => '/tmp/vacuumetrix-namespaces-cache',
     :start_offset => 300,
@@ -34,34 +34,40 @@ options = {
 optparse = OptionParser.new do|opts|
   opts.banner = "Usage: AWScloudwatchCustom.rb [options]"
 
+  opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
+    $options[:dryrun] = d
+  end
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |v|
+    $options[:verbose] = v
+  end
+
 ### For now, default to collect all custom metrics, future versions of this script
 ### could allow for passing a list of Namespaces on the commandline to filter on
 #  opts.on( '-a', '--all', 'Collect all custom metrics') do
-#    options[:all] = true
+#    $options[:all] = true
 #  end
 
   opts.on( '-n', '--namespaces_age [SECONDS]', 'Max age of cached list of Namespaces in seconds. Default 7200') do |age|
-    options[:namespaces_age] = age
+    $options[:namespaces_age] = age
   end
 
   opts.on( '-N', '--namespaces_file [PATH]', 'Full path to tempfile for list of Namespaces. Default /tmp/vacuumetrix-namespaces-cache') do |file|
-    options[:namespaces_file] = file
+    $options[:namespaces_file] = file
   end
 
   opts.on( '-s', '--start-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 300') do |s|
-    options[:start_offset] = s
+    $options[:start_offset] = s
   end
 
   opts.on( '-e', '--end-offset [OFFSET_SECONDS]', 'Time in seconds to offset from current time as the start of the metrics period. Default 0') do |e|
-    options[:end_offset] = e
+    $options[:end_offset] = e
   end
 
   opts.on('-t', '--threads [NUMBER_OF_THREADS]', 'Number of threads to use for querying CloudWatch. Default 1') do |t|
-    options[:threads] = t
+    $options[:threads] = t
   end
 
-  # This displays the help screen, all programs are
-  # assumed to have this option.
   opts.on( '-h', '--help', '' ) do
     puts opts
     exit
@@ -70,6 +76,8 @@ optparse = OptionParser.new do|opts|
 end
 
 optparse.parse!
+
+require 'Sendit'
 
 $cloudwatch = Fog::AWS::CloudWatch.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 $namespaces = []
@@ -126,16 +134,24 @@ def read_namespace_cache(namespaces_file)
   $namespaces = JSON.parse(buffer)
 end
 
-$startTime = Time.now.utc - options[:start_offset].to_i
-$endTime  = Time.now.utc - options[:end_offset].to_i
+$startTime = Time.now.utc - $options[:start_offset].to_i
+$endTime  = Time.now.utc - $options[:end_offset].to_i
 
-if File.exists?(options[:namespaces_file])
-  cache_age = Time.now - File.mtime(options[:namespaces_file])
-  if cache_age > options[:namespaces_age].to_i
+$runStart  = Time.now.utc
+$metricsSent = 0
+$collectionRetries = 0
+$sendRetries = Hash.new(0)
+my_script_tags = {}
+my_script_tags[:script] = "AWScloudwatchCustom"
+my_script_tags[:account] = "nonprod"
+
+if File.exists?($options[:namespaces_file])
+  cache_age = Time.now - File.mtime($options[:namespaces_file])
+  if cache_age > $options[:namespaces_age].to_i
     list_metrics(false)
-    update_namespace_cache(options[:namespaces_file])
+    update_namespace_cache($options[:namespaces_file])
   else
-    read_namespace_cache(options[:namespaces_file])
+    read_namespace_cache($options[:namespaces_file])
     $namespaces.each do |namespace|
       list_metrics(namespace)
     end
@@ -143,7 +159,7 @@ if File.exists?(options[:namespaces_file])
 else
   # if no cache file, create and populate it
   list_metrics(false)
-  update_namespace_cache(options[:namespaces_file])
+  update_namespace_cache($options[:namespaces_file])
 end
 
 def fetch_and_send(metric)
@@ -165,6 +181,7 @@ def fetch_and_send(metric)
       puts "error fetching metric :: " + metric['MetricName'] + " :: " 
       puts "\terror: #{e}"
       retries -= 1
+      $collectionRetries += 1
       puts "\tretries left: #{retries}"
       retry if retries > 0
     end
@@ -182,13 +199,13 @@ def fetch_and_send(metric)
       end
 
       Sendit metricpath, metricvalue, metrictimestamp
-      # puts "DEBUG: Sendit #{metricpath}, #{metricvalue}, #{metrictimestamp}"
+      $metricsSent += 1
     end
 end
 
 work_q = Queue.new
 $custom_metrics.each{|custom_metric| work_q.push custom_metric}
-workers = (0...options[:threads].to_i).map do
+workers = (0...$options[:threads].to_i).map do
   Thread.new do
     begin
       while custom_metric = work_q.pop(true)
@@ -200,4 +217,12 @@ workers = (0...options[:threads].to_i).map do
 end; "ok"
 workers.map(&:join); "ok"
 
-exit 0
+runEnd = Time.new.utc
+$runDuration = $runEnd - $runStart
+
+Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.metrics_sent", $metricsSent, $runStart.to_i.to_s, my_script_tags
+Sendit "vacuumetrix.#{my_script_tags[:script]}.collection_retries", $collectionRetries, $runStart.to_i.to_s, my_script_tags
+$sendRetries.each do |k, v|
+  Sendit "vacuumetrix.#{my_script_tags[:script]}.send_retries_#{k.to_s}", v, $runStart.to_i.to_s, my_script_tags
+end
