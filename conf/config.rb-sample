@@ -78,3 +78,12 @@ $gmondport = 8649
 # $opentsdbserver = '127.0.0.1'
 $opentsdbserver = ''
 $opentsdbport = 4242
+
+## InfluxDB
+# you'll need to have a database already created
+# for example "create database vacuumetrix"
+$influxdbserver = '127.0.0.1'
+$influxdbport = 8086
+$influxdbdatabase = 'vacuumetrix'
+
+
