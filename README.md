@@ -2,7 +2,7 @@ vacuumetrix
 ===========
 
 Sucks up metrics from various external sources and puts the data into internal systems. 
-This is a good thing to do because whilst all the external SAAS services we use are fantastic, it's also sometimes very useful to be able to be able to view and manipulate the data in one place.  For example, we might want to make a single graph with some internally generated application metrics, with some perfomance metrics from New Relic, with some metrics from an AWS Elastic Load Balancer.  Perhaps.  Anyway, vacuumetrix is a collection of ruby scripts that talk to various APIs and allows the collection of this data in one place.  
+This is a good thing to do because whilst all the external SAAS services we use are fantastic, it's also sometimes very useful to be able to be able to view and manipulate the data in one place.  For example, we might want to make a single graph with some internally generated application metrics, with some performance metrics from New Relic, with some metrics from an AWS Elastic Load Balancer.  Perhaps.  Anyway, vacuumetrix is a collection of ruby scripts that talk to various APIs and allows the collection of this data in one place.  
 
 
 ##Currently supported Inputs
@@ -87,7 +87,7 @@ The AWS CloudWatch scripts depending on the size of your infrastructure and opti
 Get New Relic End User (RUM) stats.  Supply two args, app and metric.  
 
 ##NewrelicThresholds.rb
-Get the threshhold values for all your applications.  This includes average RAM, CPU, DB etc.
+Get the threshold values for all your applications.  This includes average RAM, CPU, DB etc.
 
 ##AWScloudwatchEC2.rb
 Get EC2 instance metrics.  This includes average CPUUtilization, DiskReadBytes, DiskReadOps, DiskWriteBytes, DiskWriteOps, NetworkIn, and NetworkOut.
